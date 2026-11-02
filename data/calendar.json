@@ -1,0 +1,63 @@
+{
+  "updated": "2026-11-02T08:40:00+05:30",
+  "tz": "Asia/Kolkata",
+  "source": "MCX Daily Board macro clock, 2 Nov 2026 08:40 IST",
+  "events": [
+    {
+      "id": "mcx-open-2026-11-02",
+      "title": "MCX open after the weekend",
+      "when": "2026-11-02T09:00:00+05:30",
+      "impact": "low",
+      "assets": ["GOLD", "SILVER", "CRUDEOIL", "NATURALGAS", "ZINC", "ALUMINIUM"],
+      "note": "Friday: silver −5.5%, gold −2.8%, zinc −0.9%, natural gas −1.7%, aluminium +0.1%, crude +2.3%. Overseas gold is rebounding and oil is lower, so the open can gap against Friday — above all for crude and gold."
+    },
+    {
+      "id": "us-ism-mfg-2026-11-02",
+      "title": "US ISM Manufacturing PMI (Oct)",
+      "when": "2026-11-02T20:30:00+05:30",
+      "impact": "high",
+      "assets": ["CRUDEOIL", "GOLD", "SILVER", "NIFTY", "ZINC", "ALUMINIUM"],
+      "note": "Forecast 54.6, previous 54.5. US clocks went back on Sun 1 Nov, so US prints land 1h later in IST than last week."
+    },
+    {
+      "id": "us-midterms-2026-11-03",
+      "title": "US midterms",
+      "when": "2026-11-03T05:30:00+05:30",
+      "impact": "high",
+      "assets": ["CRUDEOIL"],
+      "note": "Crude risk into the vote. Peace-talk hopes already have overseas oil lower; Monday’s open may gap against Friday’s MCX rally."
+    },
+    {
+      "id": "us-jolts-2026-11-03",
+      "title": "US JOLTS job openings",
+      "when": "2026-11-03T20:30:00+05:30",
+      "impact": "med",
+      "assets": ["GOLD", "SILVER", "NIFTY"],
+      "note": "Forecast 7.13 million, previous 7.08 million."
+    },
+    {
+      "id": "us-ism-svc-2026-11-04",
+      "title": "US ISM Services PMI (Oct)",
+      "when": "2026-11-04T20:30:00+05:30",
+      "impact": "high",
+      "assets": ["GOLD", "SILVER", "CRUDEOIL", "NIFTY", "ZINC", "ALUMINIUM"],
+      "note": "Forecast 54.8, previous 54.9."
+    },
+    {
+      "id": "us-nfp-2026-11-06",
+      "title": "US NFP and unemployment (Oct)",
+      "when": "2026-11-06T19:00:00+05:30",
+      "impact": "high",
+      "assets": ["GOLD", "SILVER", "CRUDEOIL", "NIFTY", "ZINC", "ALUMINIUM"],
+      "note": "Payrolls forecast +65K, previous +29K. Unemployment forecast 4.2%, previous 4.2%."
+    },
+    {
+      "id": "us-michigan-2026-11-06",
+      "title": "Michigan consumer sentiment",
+      "when": "2026-11-06T20:30:00+05:30",
+      "impact": "med",
+      "assets": ["GOLD", "SILVER", "NIFTY"],
+      "note": "Forecast 48.2, previous 48. Prints after NFP the same evening."
+    }
+  ]
+}
