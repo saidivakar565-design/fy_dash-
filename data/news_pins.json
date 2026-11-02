@@ -1,69 +1,31 @@
 {
-  "updated": "2026-11-02T08:40:00+05:30",
+  "updated": "2026-11-02T16:40:00+05:30",
   "tz": "Asia/Kolkata",
   "source": "spybot",
   "pins": [
     {
-      "id": "gold-fed-hold-2026-10-28",
-      "when": "2026-10-28T15:30:00+05:30",
-      "headline": "Fed hold, two officials wanted a hike",
-      "bias": "December hike bets lifted",
-      "assets": ["GOLD", "SILVER"],
+      "id": "hormuz-sanctions-doha-2026-11-02",
+      "when": "2026-11-02T13:11:55+05:30",
+      "headline": "Iran says Hormuz can't reopen before US sanctions are lifted; Doha draft circulating; Brent down 4% anyway on deal hopes",
+      "bias": "crude bearish near-term but two-way into the US midterms; gold neutral; Nifty supported by lower crude",
+      "assets": [
+        "CRUDEOIL",
+        "BRENT",
+        "NIFTY"
+      ],
       "severity": "med",
       "url": ""
     },
     {
-      "id": "crude-war-draw-2026-10-28",
-      "when": "2026-10-28T15:30:00+05:30",
-      "headline": "Crude jumps on war fears and a stock draw",
-      "bias": "US crude up about 3%; fourth straight weekly draw",
-      "assets": ["CRUDEOIL"],
-      "severity": "high",
-      "url": ""
-    },
-    {
-      "id": "gold-hot-data-2026-10-29",
-      "when": "2026-10-29T15:30:00+05:30",
-      "headline": "Hot US GDP and PCE; gold slides",
-      "bias": "GDP 3.4% vs 3.2%; PCE +0.5% m/m keeps hike bets alive",
-      "assets": ["GOLD", "SILVER"],
-      "severity": "high",
-      "url": ""
-    },
-    {
-      "id": "crude-iran-talks-2026-10-29",
-      "when": "2026-10-29T15:30:00+05:30",
-      "headline": "Oil eases as the US pushes Iran talks",
-      "bias": "Talk headlines outweighed continued Houthi strikes",
-      "assets": ["CRUDEOIL"],
+      "id": "sebi-ltcg-fii-2026-11-02",
+      "when": "2026-11-02T12:08:00+05:30",
+      "headline": "Reuters says SEBI recommends scrapping long-term capital gains tax for foreign investors (non-binding, pre-Budget)",
+      "bias": "Nifty mildly bullish in sentiment; the +0.17% pop faded within 20 minutes",
+      "assets": [
+        "NIFTY",
+        "BANKNIFTY"
+      ],
       "severity": "med",
-      "url": ""
-    },
-    {
-      "id": "gold-oneyear-low-2026-10-30",
-      "when": "2026-10-30T15:30:00+05:30",
-      "headline": "Gold hits a one-year low",
-      "bias": "Tech rout and a hawkish Fed outweighed Iran tension",
-      "assets": ["GOLD"],
-      "severity": "high",
-      "url": ""
-    },
-    {
-      "id": "silver-under-50-2026-10-30",
-      "when": "2026-10-30T15:30:00+05:30",
-      "headline": "Silver slips under $50",
-      "bias": "White metals deeply oversold after the tech rout",
-      "assets": ["SILVER"],
-      "severity": "high",
-      "url": ""
-    },
-    {
-      "id": "crude-hormuz-2026-10-30",
-      "when": "2026-10-30T15:30:00+05:30",
-      "headline": "Hormuz mines; crude jumps again",
-      "bias": "Four tankers struck; Middle East and Ukraine supply fears",
-      "assets": ["CRUDEOIL"],
-      "severity": "high",
       "url": ""
     },
     {
@@ -71,7 +33,9 @@
       "when": "2026-11-02T08:40:00+05:30",
       "headline": "Gold bounces off its one-year low",
       "bias": "About +0.7% as dip buyers step in; hike bets still cap it",
-      "assets": ["GOLD"],
+      "assets": [
+        "GOLD"
+      ],
       "severity": "med",
       "url": ""
     },
@@ -80,8 +44,90 @@
       "when": "2026-11-02T08:40:00+05:30",
       "headline": "Peace talks outweigh Hormuz; OPEC+ holds",
       "bias": "Oil down over 1%. Monday open may gap lower vs Friday +2.3%",
-      "assets": ["CRUDEOIL", "CRUDEOILM"],
+      "assets": [
+        "CRUDEOIL",
+        "CRUDEOILM"
+      ],
       "severity": "high",
+      "url": ""
+    },
+    {
+      "id": "crude-hormuz-2026-10-30",
+      "when": "2026-10-30T15:30:00+05:30",
+      "headline": "Hormuz mines; crude jumps again",
+      "bias": "Four tankers struck; Middle East and Ukraine supply fears",
+      "assets": [
+        "CRUDEOIL"
+      ],
+      "severity": "high",
+      "url": ""
+    },
+    {
+      "id": "silver-under-50-2026-10-30",
+      "when": "2026-10-30T15:30:00+05:30",
+      "headline": "Silver slips under $50",
+      "bias": "White metals deeply oversold after the tech rout",
+      "assets": [
+        "SILVER"
+      ],
+      "severity": "high",
+      "url": ""
+    },
+    {
+      "id": "gold-oneyear-low-2026-10-30",
+      "when": "2026-10-30T15:30:00+05:30",
+      "headline": "Gold hits a one-year low",
+      "bias": "Tech rout and a hawkish Fed outweighed Iran tension",
+      "assets": [
+        "GOLD"
+      ],
+      "severity": "high",
+      "url": ""
+    },
+    {
+      "id": "crude-iran-talks-2026-10-29",
+      "when": "2026-10-29T15:30:00+05:30",
+      "headline": "Oil eases as the US pushes Iran talks",
+      "bias": "Talk headlines outweighed continued Houthi strikes",
+      "assets": [
+        "CRUDEOIL"
+      ],
+      "severity": "med",
+      "url": ""
+    },
+    {
+      "id": "gold-hot-data-2026-10-29",
+      "when": "2026-10-29T15:30:00+05:30",
+      "headline": "Hot US GDP and PCE; gold slides",
+      "bias": "GDP 3.4% vs 3.2%; PCE +0.5% m/m keeps hike bets alive",
+      "assets": [
+        "GOLD",
+        "SILVER"
+      ],
+      "severity": "high",
+      "url": ""
+    },
+    {
+      "id": "crude-war-draw-2026-10-28",
+      "when": "2026-10-28T15:30:00+05:30",
+      "headline": "Crude jumps on war fears and a stock draw",
+      "bias": "US crude up about 3%; fourth straight weekly draw",
+      "assets": [
+        "CRUDEOIL"
+      ],
+      "severity": "high",
+      "url": ""
+    },
+    {
+      "id": "gold-fed-hold-2026-10-28",
+      "when": "2026-10-28T15:30:00+05:30",
+      "headline": "Fed hold, two officials wanted a hike",
+      "bias": "December hike bets lifted",
+      "assets": [
+        "GOLD",
+        "SILVER"
+      ],
+      "severity": "med",
       "url": ""
     }
   ]
