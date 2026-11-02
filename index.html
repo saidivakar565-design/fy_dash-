@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0d1117">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-O24V1F27f8pb0glCkelh3cVHLNiHAJ5gCaVtq2aNch8=' 'sha256-0TopaehSpUgjqQkoJwN//emnNlISxntXT/MQKooVYhw=' 'sha256-aTHArWFmZySk2cnST96w9OXMPSMIBlKapiuzlIQYQXI='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; manifest-src 'self'; worker-src 'self' blob:; connect-src 'self' https://api-t1.fyers.in https://public.fyers.in wss://socket.fyers.in ws://127.0.0.1:8765 ws://localhost:8765 ws://*:8765 wss://*:8765 wss://*.ts.net; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-O24V1F27f8pb0glCkelh3cVHLNiHAJ5gCaVtq2aNch8=' 'sha256-0TopaehSpUgjqQkoJwN//emnNlISxntXT/MQKooVYhw=' 'sha256-yMcHJsd5RsbQzxue5nFMo4MQ53lpJlVgN30qsPhbr94='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; manifest-src 'self'; worker-src 'self' blob:; connect-src 'self' https://api-t1.fyers.in https://public.fyers.in wss://socket.fyers.in ws://127.0.0.1:8765 ws://localhost:8765 ws://*:8765 wss://*:8765 wss://*.ts.net; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <link rel="icon" href="icon-192.png">
 <title>Cockpit · Fyers live</title>
@@ -221,6 +221,70 @@ body.fxhub-globe:not(.fxhub-tbl) #mcxtbl,body.fxhub-globe:not(.fxhub-tbl) #mcxno
 .fxgbar{display:flex;align-items:center;gap:8px;justify-content:space-between;margin-top:4px;font-size:11.5px}.fxgbar .btn{font-size:12px;padding:4px 9px}
 @media (max-width:380px){.fxgn b{font-size:9.5px}.fxgdot{width:26px;height:26px}.fxgn.fav .fxgdot{width:33px;height:33px}}
 #fxhubflat[hidden],#fxhubglobe[hidden]{display:none!important}
+
+/* ---- economic calendar + Spybot news pins ---- */
+.fxnext{margin-top:8px}
+.fxnextbtn{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline;width:100%;background:#1c2333;border:1px solid #2b3a55;border-radius:8px;padding:6px 9px;font-size:12px;line-height:1.35}
+.fxnextbtn:active,.fxnextbtn:focus-visible{border-color:var(--acc);outline:none}
+.fxnextbtn b{font-weight:700;color:var(--txt)}
+.calpull{font-size:11px;color:var(--gold);text-align:center}
+.calpull:empty{display:none}
+.calsec{margin:10px 0 6px;font-size:12px;color:var(--gold);font-weight:700}
+.callist{display:flex;flex-direction:column;gap:6px}
+.calrow{display:grid;grid-template-columns:76px 1fr;gap:8px;padding:8px 9px;border:1px solid var(--grid);border-radius:8px;background:var(--panel2)}
+.calrow.soon{border-color:#6b4f12;background:#2a1d0b}
+.calrow.today{box-shadow:inset 3px 0 0 var(--gold)}
+.calwhen{font-size:11px;color:var(--muted);line-height:1.35}
+.calwhen b{color:var(--txt);font-size:12px}
+.caltitle{font-weight:700;font-size:13px;line-height:1.35}
+.calmeta2{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-top:4px}
+.calnote{color:var(--muted);font-size:11.5px;margin-top:3px;line-height:1.35}
+.calimp{font-size:10px;font-weight:800;letter-spacing:.3px;text-transform:uppercase;border-radius:999px;padding:1px 6px}
+.calimp.high{background:#3d1416;color:#f85149}
+.calimp.med{background:#3b2f0b;color:#e3b341}
+.calimp.low{background:#21262d;color:#8b949e}
+.caltag{font-size:10px;color:var(--acc);border:1px solid var(--grid);border-radius:999px;padding:0 6px}
+.calkind{font-size:10px;font-weight:800;letter-spacing:.3px;color:#0d1117;background:var(--acc);border-radius:4px;padding:0 4px;margin-right:4px}
+.calold{margin-top:8px}
+.calold summary{cursor:pointer;color:var(--muted);font-size:12.5px}
+.fxpin{margin-top:2px}
+.fxevh{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin:8px 0 4px}
+.fxevl{display:flex;flex-direction:column;gap:2px}
+.fxev{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:22px 1fr;gap:6px;align-items:start;padding:4px 2px;border-radius:6px;width:100%;text-align:left}
+.fxev.on{background:#1c2333}
+.fxev b{display:block;font-size:12.5px;font-weight:700;line-height:1.3;color:var(--txt)}
+.fxev .sub{display:block;margin-top:1px}
+.fxn{width:18px;height:18px;border-radius:50%;background:var(--gold);color:#0d1117;font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;margin-top:1px;font-style:normal;font-family:ui-monospace,Menlo,Consolas,monospace}
+.fxn.hollow{background:transparent;color:var(--gold);box-shadow:inset 0 0 0 1.5px var(--gold)}
+@media (max-width:640px){.calrow{grid-template-columns:68px 1fr;padding:7px 8px}.fxnextbtn{font-size:11.5px}}
+
+.fxlay{position:sticky;top:0;z-index:6;display:flex;flex-wrap:wrap;gap:5px;align-items:center;background:rgba(13,17,23,.94);padding:6px 0;border-bottom:1px solid var(--grid)}
+.fxlay .tl{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-right:2px}
+.fxlay button{font:600 12px inherit;min-height:32px;padding:4px 10px;border-radius:16px;border:1px solid var(--grid);background:var(--panel2);color:var(--muted);cursor:pointer}
+.fxlay button[aria-pressed="true"]{background:var(--txt);color:var(--bg);border-color:var(--txt)}
+.fxmeta{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:12px;line-height:1.35;margin-top:4px}
+.fxmeta b{font-weight:700}
+.fxmx{margin-top:8px}
+.fxmxhd{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.fxmxhd b{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
+.fxmxnote{font-size:11px;color:var(--muted);margin:2px 0 6px;line-height:1.35}
+.fxmxwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--grid);border-radius:8px}
+table.fxmxt{border-collapse:collapse;width:100%;min-width:340px;font-size:12px}
+table.fxmxt th,table.fxmxt td{border-bottom:1px solid var(--grid);padding:4px 3px;text-align:center}
+table.fxmxt th:first-child,table.fxmxt td:first-child{text-align:left;padding-left:8px}
+table.fxmxt thead th,table.fxmxt tr:first-child th{color:var(--muted);font-size:11px;font-weight:700}
+table.fxmxt thead th{position:sticky;top:0;background:#161b22;z-index:1}table.fxmxt thead small{display:block;font-weight:500;font-size:9px;letter-spacing:0;color:var(--muted)}
+.fxmxnote.warn{color:var(--gold)}
+table.fxmxt button{all:unset;cursor:pointer;display:block;font-weight:700;color:var(--txt);min-height:36px}
+table.fxmxt button span{display:block;font-weight:500;font-size:10.5px;color:var(--muted)}
+.mxchip{display:block;border-radius:4px;padding:3px 2px;line-height:1.15;min-width:64px}
+.mxchip b{display:block;font-size:12px;font-weight:700}
+.mxchip i{display:block;font-style:normal;font-weight:500;font-size:10px;opacity:.9}
+.mxchip.bear{background:#3a1f19;color:#ff8266}
+.mxchip.bull{background:#15352a;color:#3fb950}
+.mxchip.flat{background:#3b2f0b;color:#e3b341}
+.mxchip.wait{background:#21262d;color:#8b949e}
+.mxkey{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:11.5px;color:var(--muted);margin-top:6px}
 </style>
 <script>/**
 * plotly.js v4.1.1
@@ -3859,10 +3923,11 @@ Index::`,"LONG","NotOk","STK_PRC","connect","blob","HSM_LOG_Flag","wasClean","se
 </head>
 <body>
 <header>
- <div class="hrow"><span class="brand">COMMODITIES COCKPIT</span><span class="sub">Prices · Correlations · Macro · Rotation · Screener</span><span class="livebadge" id="livebadge" title="Live OpenAlgo feed — open the Live feed tab"><span class="dot"></span><span id="livebadgetxt">LIVE</span></span><span class="asof" id="asof"></span></div>
+ <div class="hrow"><span class="brand">COMMODITIES COCKPIT</span><span class="sub">Prices · Correlations · Macro · Rotation · Screener · Calendar</span><span class="livebadge" id="livebadge" title="Live OpenAlgo feed — open the Live feed tab"><span class="dot"></span><span id="livebadgetxt">LIVE</span></span><span class="asof" id="asof"></span></div>
  <nav id="nav">
   <button data-tab="commodities" class="active">Commodities</button>
   <button data-tab="heat">Heat map</button>
+  <button data-tab="calendar">Calendar</button>
   <button data-tab="macro">Macro</button>
   <button data-tab="stocks">Stocks heat map</button>
   <button data-tab="rotation">Sector rotation</button>
@@ -4099,6 +4164,16 @@ Index::`,"LONG","NotOk","STK_PRC","connect","blob","HSM_LOG_Flag","wasClean","se
   </div>
  </div>
 </section>
+<section class="tab" id="tab-calendar">
+ <div class="panel" style="margin-top:0">
+  <div class="lvhead"><h2>Calendar <span class="sub" style="font-weight:400">· economic events &amp; Spybot pins · IST</span></h2><button class="btn" id="calreload" type="button">Reload</button></div>
+  <p class="desc" id="calmeta">Loading calendar…</p>
+  <div id="calpull" class="calpull" aria-live="polite"></div>
+  <div class="ctrl"><span class="seg" id="calfilters"><button type="button" data-f="all" class="on">All</button><button type="button" data-f="soon">24h</button><button type="button" data-f="high">High</button><button type="button" data-f="pins">Pins</button></span></div>
+  <div id="callist" class="callist"></div>
+  <p class="sub" style="margin-top:8px">Read-only. Times are IST from the 2 Nov macro clock (US clocks changed 1 Nov, so US prints are 1h later). Pull down or tap Reload to fetch <code>data/calendar.json</code> and <code>data/news_pins.json</code>.</p>
+ </div>
+</section>
 </main>
 <footer id="footer"></footer>
 <script>
@@ -4213,7 +4288,7 @@ $('asof').textContent = `Completed closes to ${fmtDay(DATA.asof)}`+(DATA.quote_t
     + (nseOpen ? '' : `<span class="qclosed">NSE not in session — Indian stocks, sectors, Nifty and India VIX show the last completed close. NSE trades 9:15–15:30 IST.</span>`)
     + `<span class="qnote">Yahoo Finance quotes, ~15 min delayed — not live ticks.</span>`;
 })();
-$('footer').innerHTML = `<b>Data:</b> Yahoo Finance daily closes plus the latest delayed intraday 5-min bar (provisional, marked on cards; excluded from correlations and sector rotation) via yfinance — COMEX/NYMEX/ICE front-month futures (GC=F, SI=F, BZ=F, CL=F, NG=F, HG=F), DX-Y.NYB, ^TNX, INR=X, ^INDIAVIX, ^NSEI, NSE sector indices / tracking-ETF proxies and Nifty 50 stocks (.NS). Nifty 50 constituents from NSE (ind_nifty50list.csv). Completed closes to <b>${DATA.asof}</b>${DATA.quote_ts?'; latest intraday quote '+fmtIST(DATA.quote_ts)+' IST':''}; history from ${has('GOLD')?S.GOLD.d[0]:'–'}. ₹ prices on commodity cards are approximate conversions (USD × USD/INR, unit-converted, excluding import duty/GST), not MCX quotes. Events verified against Reuters, EIA, CNBC, BBC and NYT reporting (links in the event list).<br>${DATA.failed.length?'<b>Unavailable / substituted:</b> '+DATA.failed.join('; ')+'.<br>':''}For information only. <b>Not investment advice.</b>`;
+$('footer').innerHTML = `<b>Data:</b> Yahoo Finance daily closes plus the latest delayed intraday 5-min bar (provisional, marked on cards; excluded from correlations and sector rotation) via yfinance — COMEX/NYMEX/ICE front-month futures (GC=F, SI=F, BZ=F, CL=F, NG=F, HG=F), DX-Y.NYB, ^TNX, INR=X, ^INDIAVIX, ^NSEI, NSE sector indices / tracking-ETF proxies and Nifty 50 stocks (.NS). Nifty 50 constituents from NSE (ind_nifty50list.csv). Completed closes to <b>${DATA.asof}</b>${DATA.quote_ts?'; latest intraday quote '+fmtIST(DATA.quote_ts)+' IST':''}; history from ${has('GOLD')?S.GOLD.d[0]:'–'}. ₹ prices on commodity cards are approximate conversions (USD × USD/INR, unit-converted, excluding import duty/GST), not MCX quotes. Events verified against Reuters, EIA, CNBC, BBC and NYT reporting (links in the event list). Economic calendar and Spybot pins load from <code>data/calendar.json</code> and <code>data/news_pins.json</code> on this site (same origin, read-only).<br>${DATA.failed.length?'<b>Unavailable / substituted:</b> '+DATA.failed.join('; ')+'.<br>':''}For information only. <b>Not investment advice.</b>`;
 
 /* ---------------- tabs ---------------- */
 const rendered = {}, RENDER = {};
@@ -5203,30 +5278,33 @@ function fxBuildPanel(){ if($('fxc')) return;
    <div class="fxbar"><span class="seg" id="fxtf">${FX_TF.map(([v,l])=>`<button type="button" data-v="${v}">${l}</button>`).join('')}</span>
     <span class="fxz" role="group" aria-label="Chart zoom"><button class="btn" id="fxzout" type="button" title="Zoom out (more bars)" aria-label="Zoom out">−</button><span class="fxzlbl" id="fxzlbl" aria-live="polite"></span><button class="btn" id="fxzin" type="button" title="Zoom in (fewer bars)" aria-label="Zoom in">+</button><button class="btn" id="fxzreset" type="button" title="Reset zoom" aria-label="Reset zoom">Reset</button></span></div>
    <div class="fxbias" id="fxbias"></div>
+   <div class="fxlay" id="fxlay" role="group" aria-label="Chart layers"></div>
    <details class="fxinddet"><summary>Indicators</summary><div class="fxind" id="fxind"></div></details>
    <div id="fxchart"></div>
-   <div class="fxfoot"><div id="fxatr"></div><div id="fxstat" class="sub"></div><div class="sub">Read-only chart · analysis only · no order buttons. Not investment advice.</div></div>`;
+   <div class="fxfoot"><div id="fxmeta" class="fxmeta"></div><div id="fxatr"></div><div id="fxstat" class="sub"></div><div id="fxpin" class="fxpin"></div><div class="sub">Read-only chart · analysis only · no order buttons. Not investment advice.</div></div>`;
   document.body.appendChild(d);
   $('fxback').onclick=()=>{ if(history.state && history.state.fxc) history.back(); else fxClose(); };
+  $('fxpin').onclick=e=>{ const b=e.target.closest('[data-fid]'); if(!b) return; FXV.feedSel=b.dataset.fid; fxFeedFoot(); };
   $('fxfav').onclick=()=>{ if(FXV.open){ fxToggleFav(FXV.open.id); fxPaintHead(); } };
   $('fxreload').onclick=()=>fxLoad(true);
   $('fxtf').onclick=e=>{ const b=e.target.closest('button'); if(!b || b.disabled) return; FXV.tf=b.dataset.v; lsSet('fx_tf', FXV.tf); FXV.view=null; fxLoad(false); };
   $('fxzin').onclick=()=>fxZoomBars(0.67); $('fxzout').onclick=()=>fxZoomBars(1.5); $('fxzreset').onclick=()=>{ FXV.view=null; fxDraw(); };
   const I=fxInd(), lab={dc:'Dual Donchian', hull:'Hull Suite', smc:'SMC', pivot:'Pivot (Std · −1 / +1)', rsi:'RSI', macd:'MACD', atr:'ATR pane', sma:'SMA', ema:'EMA', bb:'Bollinger', sess:'Sessions'};
   $('fxind').innerHTML=Object.keys(FX_IND_DEF).map(k=>`<span class="ind"><label><input type="checkbox" data-k="${k}" ${I[k].on?'checked':''}> ${lab[k]}</label>${Object.keys(FX_IND_DEF[k]).filter(p=>p!=='on').map(p=>`<input type="number" data-k="${k}" data-p="${p}" value="${I[k][p]}" title="${lab[k]} ${p}" min="1" step="${p==='mult'?0.5:1}">`).join('')}</span>`).join('');
-  $('fxind').onchange=e=>{ const k=e.target.dataset.k; if(!k) return; if(e.target.type==='checkbox') I[k].on=e.target.checked; else { const v=parseFloat(e.target.value); if(v>0) I[k][e.target.dataset.p]=v; } lsSet('fx_ind', I); fxDraw(); fxBias(); };
+  $('fxind').onchange=e=>{ const k=e.target.dataset.k; if(!k) return; if(e.target.type==='checkbox') I[k].on=e.target.checked; else { const v=parseFloat(e.target.value); if(v>0) I[k][e.target.dataset.p]=v; } lsSet('fx_ind', I); if(k==='pivot'){ fxLay().piv=!!I.pivot.on; lsSet('fx_lay', fxLay()); } if(k==='dc'){ fxLay().dc20=fxLay().dc40=!!I.dc.on; lsSet('fx_lay', fxLay()); } fxLayPaint(); fxDraw(); fxBias(); };
+  fxLayPaint();
   fxPinch($('fxchart'));
   window.addEventListener('popstate', ()=>{ if(FXV.open && !(history.state && history.state.fxc)) fxClose(); });
   window.addEventListener('resize', ()=>{ if(FXV.open) { clearTimeout(FXV.rz); FXV.rz=setTimeout(fxDraw, 250); } });
   DataLayer.subscribe(k=>{ if(!FXV.open || FXV.open.kind!=='mcx' || (k!=null && k!==FXV.open.key)) return; if(FXV.tickT) return;
     FXV.tickT=setTimeout(()=>{ FXV.tickT=null; fxLiveBar(); fxPaintHead(); }, 2500); });
 }
-function fxOpen(id){ const r=fxRow(id); if(!r) return; fxBuildPanel(); FXV.open=r; FXV.bars=null; FXV.view=null;
+function fxOpen(id){ const r=fxRow(id); if(!r) return; fxBuildPanel(); FXV.open=r; FXV.bars=null; FXV.view=null; FXV.feedSel=null; FXV.feedMarks=[];
   const canIntra=!!r.fy; FXV.tf = canIntra ? (FXV.tf || lsGet('fx_tf') || '120') : 'D'; if(!canIntra) FXV.tf='D';
   $('fxtf').querySelectorAll('button').forEach(b=>{ b.disabled = !canIntra && b.dataset.v!=='D'; });
   $('fxc').hidden=false; document.body.classList.add('fxopen');
   if(!(history.state && history.state.fxc)) try{ history.pushState({fxc:1}, '', location.href); }catch(e){}
-  fxPaintHead(); $('fxbias').innerHTML=''; $('fxatr').textContent=''; fxLoad(false); }
+  fxPaintHead(); $('fxbias').innerHTML=''; $('fxatr').textContent=''; if($('fxpin')) $('fxpin').innerHTML=''; fxLoad(false); }
 function fxClose(){ FXV.open=null; const c=$('fxc'); if(c){ c.hidden=true; try{ Plotly.purge('fxchart'); }catch(e){} $('fxchart').dataset.fxrl=''; } document.body.classList.remove('fxopen'); }
 function fxPaintHead(){ const r=FXV.open; if(!r) return; $('fxname').textContent = r.kind==='mcx' ? r.label : r.name;
   const ms=r.kind==='mcx'?(LCFG.map[r.key]||{}).symbol:'';
@@ -5290,12 +5368,232 @@ function fxPivots(b){ const n=b&&b.c?b.c.length:0; if(n<2) return null; const da
   const [PH, PL]=hl(pf, f-1), [CH, CL]=hl(f, n-1);
   return {back:Object.assign(fxPivLv(PH, PL, b.c[f-1]), {fromIdx:f, toIdx:n-1, day:pd}), adv:Object.assign(fxPivLv(CH, CL, b.c[n-1]), {fromIdx:n, day:cd})}; }
 const FX_PIV_KEYS=[['r3','R3','#ff6b6b'],['r2','R2','#f85149'],['r1','R1','#ff8a80'],['p','P','#e3b341'],['s1','S1','#7ee787'],['s2','S2','#3fb950'],['s3','S3','#2ea043']];
-function fxDraw(){ const r=FXV.open, b=FXV.bars, el=$('fxchart'); if(!r||!b||!el) return; const I=fxInd(), n=b.c.length, x=b.lab||b.x, m=isMobile();
+/* Signal matrix + chart layers (read-only). DC / pivots / levels / zones / news. */
+var FXLAY = null;
+function fxLay(){
+  if(!FXLAY){
+    const s=lsGet('fx_lay')||{};
+    FXLAY=Object.assign({dc20:true, dc40:true, piv:true, lev:true, zon:true, news:true, path:false}, s);
+  }
+  return FXLAY;
+}
+function fxLayPaint(){
+  const el=$('fxlay'); if(!el) return;
+  const L=fxLay();
+  const items=[['dc20','DC 20'],['dc40','DC 40'],['piv','Pivots'],['lev','Levels'],['zon','Zones'],['news','News'],['path','Paths']];
+  if(el.dataset.built!=='1'){
+    el.dataset.built='1';
+    el.innerHTML='<span class="tl">Layers</span>'+items.map(([k,lab])=>`<button type="button" data-lay="${k}" aria-pressed="${L[k]?'true':'false'}">${lab}</button>`).join('');
+    el.onclick=e=>{
+      const b=e.target.closest('[data-lay]'); if(!b) return;
+      const k=b.dataset.lay, lay=fxLay(); lay[k]=!lay[k]; lsSet('fx_lay', lay);
+      if(k==='piv'){ const I=fxInd(); I.pivot.on=!!lay.piv; lsSet('fx_ind', I); const box=document.querySelector('#fxind input[data-k="pivot"]'); if(box) box.checked=I.pivot.on; }
+      if(k==='dc20'||k==='dc40'){ const I=fxInd(); I.dc.on=!!(lay.dc20||lay.dc40); lsSet('fx_ind', I); const box=document.querySelector('#fxind input[data-k="dc"]'); if(box) box.checked=I.dc.on; }
+      b.setAttribute('aria-pressed', lay[k]?'true':'false');
+      fxDraw();
+    };
+  } else el.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed', L[b.dataset.lay]?'true':'false'));
+}
+function fxSwings(b, k){
+  k=k||3; const n=b.c.length, H=[], L=[];
+  for(let i=k;i<n-k;i++){
+    let isH=true, isL=true;
+    for(let j=i-k;j<=i+k;j++){ if(b.h[j]>b.h[i]) isH=false; if(b.l[j]<b.l[i]) isL=false; }
+    if(isH) H.push({i, p:b.h[i]});
+    if(isL) L.push({i, p:b.l[i]});
+  }
+  return {H, L};
+}
+function fxDonPos(b, n){
+  const d=fxDon(b, n), i=b.c.length-1, up=d.up[i], lo=d.lo[i];
+  if(up==null||!(up>lo)) return null;
+  return {up, lo, pct:(b.c[i]-lo)/(up-lo)*100, d};
+}
+function fxStoch(b, n){
+  n=n||14; const o=new Array(b.c.length).fill(null);
+  for(let i=n-1;i<b.c.length;i++){
+    let hh=-Infinity, ll=Infinity;
+    for(let j=i-n+1;j<=i;j++){ if(b.h[j]>hh) hh=b.h[j]; if(b.l[j]<ll) ll=b.l[j]; }
+    o[i]=hh===ll?50:(b.c[i]-ll)/(hh-ll)*100;
+  }
+  return o;
+}
+function fxAdx(b, n){
+  n=n||14; const N=b.c.length; if(N<n*2) return null;
+  const tr=new Array(N).fill(0), pd=new Array(N).fill(0), md=new Array(N).fill(0);
+  for(let i=1;i<N;i++){
+    const up=b.h[i]-b.h[i-1], dn=b.l[i-1]-b.l[i];
+    pd[i]=up>dn&&up>0?up:0; md[i]=dn>up&&dn>0?dn:0;
+    tr[i]=Math.max(b.h[i]-b.l[i], Math.abs(b.h[i]-b.c[i-1]), Math.abs(b.l[i]-b.c[i-1]));
+  }
+  const wild=a=>{ const o=new Array(N).fill(null); let s=0; for(let i=1;i<N;i++){ if(i<n){ s+=a[i]; if(i===n-1) o[i]=s; } else { s=s-s/n+a[i]; o[i]=s; } } return o; };
+  const TR=wild(tr), P=wild(pd), M=wild(md), dx=new Array(N).fill(null);
+  for(let i=0;i<N;i++){ if(TR[i]){ const s=(P[i]||0)+(M[i]||0); dx[i]=s?Math.abs((P[i]||0)-(M[i]||0))/s*100:0; } }
+  const adx=new Array(N).fill(null); let acc=0, cnt=0, seeded=false, prev=0;
+  for(let i=0;i<N;i++){
+    if(dx[i]==null) continue;
+    if(!seeded){ acc+=dx[i]; cnt++; if(cnt===n){ prev=acc/n; adx[i]=prev; seeded=true; } }
+    else { prev=(prev*(n-1)+dx[i])/n; adx[i]=prev; }
+  }
+  return adx;
+}
+function fxBoardLayers(b, x, shapes, ann, T){
+  const L=fxLay(), n=b.c.length, last=b.c[n-1], m=isMobile();
+  const dg=v=>v>=5000?0:2;
+  const hexA=(hex,a)=>{ const n=parseInt(hex.slice(1),16); return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`; };
+  const drawDC=(period, color, dash)=>{
+    const pos=fxDonPos(b, period); if(!pos) return;
+    const d=pos.d;
+    T.push({type:'scatter', mode:'lines', x, y:d.lo, line:{width:0}, hoverinfo:'skip', showlegend:false, yaxis:'y'});
+    T.push({type:'scatter', mode:'lines', x, y:d.up, name:'DC '+period, legendgroup:'dc'+period, fill:'tonexty', fillcolor:hexA(color,.12), line:{color, width:dash?1.15:1.5, dash:dash||'solid'}, hoverinfo:'skip', yaxis:'y'});
+    T.push({type:'scatter', mode:'lines', x, y:d.lo, legendgroup:'dc'+period, showlegend:false, line:{color, width:dash?1.15:1.5, dash:dash||'solid'}, hoverinfo:'skip', yaxis:'y'});
+  };
+  if(L.dc40) drawDC(40, '#58a6ff', '');
+  if(L.dc20) drawDC(20, '#d2a8ff', 'dash');
+  if(L.zon){
+    const sw=fxSwings(b, 3);
+    const band=(arr, kind)=>{
+      const pts=arr.slice(-2); if(!pts.length) return;
+      let top=Math.max(...pts.map(z=>z.p)), bot=Math.min(...pts.map(z=>z.p));
+      if(!(top>bot)){ const pad=Math.abs(last)*0.0035||1; top+=pad; bot-=pad; }
+      shapes.push({type:'rect', xref:'paper', x0:0, x1:1, yref:'y', y0:bot, y1:top, fillcolor:kind==='supply'?'rgba(248,81,73,.13)':'rgba(63,185,80,.13)', line:{width:0}, layer:'below'});
+    };
+    band(sw.H, 'supply'); band(sw.L, 'demand');
+  }
+  if(L.lev){
+    const sw=fxSwings(b, 3);
+    const res=sw.H.filter(z=>z.p>last*1.001).sort((a,c)=>a.p-c.p).slice(0,2);
+    const sup=sw.L.filter(z=>z.p<last*0.999).sort((a,c)=>c.p-a.p).slice(0,2);
+    res.forEach((z,i)=>{
+      shapes.push({type:'line', xref:'paper', x0:0, x1:1, yref:'y', y0:z.p, y1:z.p, line:{color:'#f85149', width:1, dash:'dash'}, opacity:.75});
+      ann.push({xref:'paper', x:1, y:z.p, yref:'y', text:`R${i+1} ${fmtN(z.p, dg(z.p))}`, showarrow:false, xanchor:'right', yanchor:'bottom', font:{size:m?8:9, color:'#f85149'}, bgcolor:'rgba(13,17,23,.72)', borderpad:1});
+    });
+    sup.forEach((z,i)=>{
+      shapes.push({type:'line', xref:'paper', x0:0, x1:1, yref:'y', y0:z.p, y1:z.p, line:{color:'#3fb950', width:1, dash:'dash'}, opacity:.75});
+      ann.push({xref:'paper', x:1, y:z.p, yref:'y', text:`S${i+1} ${fmtN(z.p, dg(z.p))}`, showarrow:false, xanchor:'right', yanchor:'top', font:{size:m?8:9, color:'#3fb950'}, bgcolor:'rgba(13,17,23,.72)', borderpad:1});
+    });
+  }
+  if(L.path){
+    const sw=fxSwings(b, 3);
+    const hi=sw.H.filter(z=>z.i>n-50).at(-1), lo=sw.L.filter(z=>z.i>n-50).at(-1);
+    const x1=n-0.5+Math.min(2.2, (typeof fxPad==='function'?fxPad():2.5)*0.55);
+    if(hi && hi.p>last){
+      ann.push({x:x1, y:hi.p, ax:n-1, ay:last, xref:'x', yref:'y', axref:'x', ayref:'y', text:'', showarrow:true, arrowhead:2, arrowwidth:1.3, arrowcolor:'#3fb950'});
+      ann.push({x:x1, y:hi.p, xref:'x', yref:'y', text:'Above '+fmtN(hi.p, dg(hi.p)), showarrow:false, xanchor:'left', font:{size:m?8:9, color:'#3fb950'}});
+    }
+    if(lo && lo.p<last){
+      ann.push({x:x1, y:lo.p, ax:n-1, ay:last, xref:'x', yref:'y', axref:'x', ayref:'y', text:'', showarrow:true, arrowhead:2, arrowwidth:1.3, arrowcolor:'#f85149'});
+      ann.push({x:x1, y:lo.p, xref:'x', yref:'y', text:'Below '+fmtN(lo.p, dg(lo.p)), showarrow:false, xanchor:'left', font:{size:m?8:9, color:'#f85149'}});
+    }
+  }
+}
+function fxBoardMeta(b){
+  const el=$('fxmeta'); if(!el||!b||!b.c.length) return;
+  const L=fxLay(), last=b.c.at(-1), bits=[];
+  const sig=mxIntra(b, Math.min(8, Math.floor(b.c.length/3)||8));
+  if(sig) bits.push(`<span class="fxb ${sig.dir==='bull'?'bu':sig.dir==='bear'?'be':'mx'}">${sig.dir==='bull'?'▲ Bull':sig.dir==='bear'?'▼ Bear':'● Flat'}</span>`);
+  const rv=rsi(b.c, 14).at(-1); if(rv!=null) bits.push(`<span>RSI <b>${rv.toFixed(1)}</b></span>`);
+  const ad=fxAdx(b, 14); const av=ad&&ad.at(-1); if(av!=null) bits.push(`<span>ADX <b>${av.toFixed(1)}</b></span>`);
+  const sv=fxStoch(b, 14).at(-1); if(sv!=null) bits.push(`<span>Stoch <b>${sv.toFixed(0)}</b></span>`);
+  const ev=ema(b.c, 20).at(-1); if(ev!=null) bits.push(`<span>EMA20 <b>${fmtN(ev, ev>=5000?0:2)}</b></span>`);
+  if(L.dc20){ const p=fxDonPos(b, 20); if(p) bits.push(`<span>DC20 <b>${p.pct.toFixed(0)}%</b> up</span>`); }
+  if(L.dc40){ const p=fxDonPos(b, 40); if(p) bits.push(`<span>DC40 <b>${p.pct.toFixed(0)}%</b> up</span>`); }
+  el.innerHTML=bits.join('');
+}
+function mxHL(b, a, z){ let H=-Infinity, L=Infinity; for(let i=a;i<=z;i++){ if(b.h[i]>H) H=b.h[i]; if(b.l[i]<L) L=b.l[i]; } return [H, L]; }
+function mxSignal(b, win){
+  if(!b||!b.c||b.c.length<win*2) return null;
+  const n=b.c.length, a0=n-win, b0=a0-win; if(b0<0||!b.c[a0-1]) return null;
+  const [rH,rL]=mxHL(b, a0, n-1), [pH,pL]=mxHL(b, b0, a0-1);
+  const pct=(b.c[n-1]/b.c[a0-1]-1)*100;
+  let dir='flat';
+  if(rH>pH && rL>pL) dir='bull';
+  else if(rH<pH && rL<pL) dir='bear';
+  return {dir, pct, win, rH, rL};
+}
+function mxIntra(b, win){
+  const s=mxSignal(b, win); if(!s) return null;
+  s.sub=Math.abs(s.pct)<0.35?'flat in '+s.win:(s.pct>=0?'+':'')+s.pct.toFixed(1)+'% in '+s.win;
+  return s;
+}
+function mxDaily(b){
+  const s=mxSignal(b, 8); if(!s) return null;
+  const n=b.c.length, last=b.c[n-1];
+  let lo=Infinity, hi=-Infinity;
+  for(let i=Math.max(0,n-20);i<n;i++){ if(b.l[i]<lo) lo=b.l[i]; if(b.h[i]>hi) hi=b.h[i]; }
+  const prevH=Math.max(...b.h.slice(n-9, n-1)), prevL=Math.min(...b.l.slice(n-9, n-1));
+  if(last<=lo*1.002) s.sub='new low';
+  else if(last>=hi*0.998) s.sub='new high';
+  else if(s.dir==='bull' && last>prevH) s.sub='breakout';
+  else if(s.dir==='bear' && last<prevL) s.sub='swing low lost';
+  else s.sub=Math.abs(s.pct)<0.35?'flat in 8':(s.pct>=0?'+':'')+s.pct.toFixed(1)+'% in 8';
+  return s;
+}
+var MX={rows:[], cells:{}, started:false, err:''};
+function mxPick(){
+  const keys=new Set(mcxKeys());
+  const pick=(cands, name)=>{ const k=cands.find(x=>keys.has(x)); return k?{key:k, name}:null; };
+  return [pick(['GOLDM','GOLD','GOLDTEN'],'Gold'), pick(['SILVERMIC','SILVERM','SILVER'],'Silver'), pick(['ALUMINI'],'Aluminium'), pick(['ZINCMINI'],'Zinc'), pick(['CRUDEOILM','WTI'],'Crude'), pick(['NATGAS','NATGASMINI'],'Natural gas')].filter(Boolean);
+}
+const MX_TF=[['D','D',140],['240','4H',45],['120','2H',30],['15','15m',6]];
+function mxCell(sig){
+  if(!sig) return '<td><span class="mxchip wait">…</span></td>';
+  if(sig.err) return `<td><span class="mxchip wait" title="${esc(sig.err)}">…</span></td>`;
+  const ic=sig.dir==='bull'?'▲':sig.dir==='bear'?'▼':'●';
+  const w=sig.dir==='bull'?'Bull':sig.dir==='bear'?'Bear':'Flat';
+  return `<td><span class="mxchip ${sig.dir}"><b>${ic} ${w}</b><i>${esc(sig.sub||'')}</i></span></td>`;
+}
+function mxPaint(){
+  const el=$('fxmxtbl'); if(!el) return;
+  const note=$('fxmxnote');
+  if(note){ note.textContent = MX.err || 'Bull = higher high and higher low vs the prior window; Bear = lower high and lower low; else Flat. Daily and 15m use 8 bars; 4H and 2H use 40.'; note.classList.toggle('warn', !!MX.err); }
+  if(!MX.rows.length) MX.rows=mxPick();
+  if(!MX.rows.length){ el.innerHTML='<tr><td class="sub">No MCX contracts in this build.</td></tr>'; return; }
+  const head='<thead><tr><th>Contract</th>'+MX_TF.map(t=>`<th>${t[1]}<small>${t[0]==='15'||t[0]==='D'?'8 bars':'40 bars'}</small></th>`).join('')+'</tr></thead>';
+  const body=MX.rows.map(row=>{
+    const q=typeof fxHubQuote==='function'?fxHubQuote(row.key):null;
+    const px=q&&q.ltp!=null?fmtN(q.ltp, q.ltp>=5000?0:2):'';
+    const cells=MX_TF.map(t=>mxCell(MX.cells[row.key+'|'+t[0]])).join('');
+    return `<tr><th><button type="button" data-id="M:${esc(row.key)}">${esc(row.name)}${px?`<span>${esc(px)}</span>`:''}</button></th>${cells}</tr>`;
+  }).join('');
+  el.innerHTML=head+body;
+}
+function mxToggle(force){
+  const el=$('fxmx'); if(!el) return;
+  const on=force!=null?!!force:el.hidden;
+  el.hidden=!on;
+  const b=$('fxmxbtn'); if(b) b.classList.toggle('on', on);
+  try{ lsSet('fx_mx', on?1:0); }catch(e){}
+  if(on) mxLoad();
+}
+async function mxLoad(){
+  MX.rows=mxPick(); mxPaint();
+  if(!MX.rows.length) return;
+  if(typeof FyAuth==='undefined' || !FyAuth.valid()){
+    MX.err='Log in on the Live feed tab to fill the matrix from Fyers bars.';
+    mxPaint(); return;
+  }
+  MX.err='';
+  for(const row of MX.rows){
+    const r=fxRow('M:'+row.key);
+    for(const [res,,days] of MX_TF){
+      const id=row.key+'|'+res;
+      if(!r||!r.fy){ MX.cells[id]={err:'no symbol'}; mxPaint(); continue; }
+      try{
+        const raw=await fxHistory(r.fy, res, days, false);
+        const bars=fxCandles(raw, res);
+        MX.cells[id]= res==='D'?mxDaily(bars):mxIntra(bars, res==='15'?8:40);
+        if(!MX.cells[id]) MX.cells[id]={err:'short history'};
+      }catch(e){ MX.cells[id]={err:(e&&e.message)||'unavailable'}; }
+      mxPaint();
+    }
+  }
+}
+
+function fxDraw(){ const r=FXV.open, b=FXV.bars, el=$('fxchart'); if(!r||!b||!el) return; FXV.feedTop=0; const I=fxInd(), n=b.c.length, x=b.lab||b.x, m=isMobile();
   const T=[], shapes=[], ann=[], panes=[]; const ov=(y,name,color,o={})=>T.push(Object.assign({type:'scatter', mode:'lines', x, y, name, line:{color, width:o.w||1.2, dash:o.dash||'solid'}, hoverinfo:'skip', yaxis:'y', showlegend:o.leg!==false, legendgroup:o.g}, o.extra||{}));
   T.push({type:'candlestick', x, open:b.o, high:b.h, low:b.l, close:b.c, name:r.label, increasing:{line:{color:'#26a69a',width:1}, fillcolor:'#26a69a'}, decreasing:{line:{color:'#ef5350',width:1}, fillcolor:'#ef5350'}, showlegend:false, yaxis:'y'});
-  if(I.dc.on){ const f=fxDon(b, I.dc.fast), s=fxDon(b, I.dc.slow);
-    ov(s.up, `DC ${I.dc.slow}`, '#ab47bc', {dash:'dash', g:'dcs'}); ov(s.lo, `DC ${I.dc.slow}`, '#ab47bc', {dash:'dash', g:'dcs', leg:false});
-    ov(f.up, `DC ${I.dc.fast}`, '#42a5f5', {g:'dcf'}); ov(f.lo, `DC ${I.dc.fast}`, '#42a5f5', {g:'dcf', leg:false}); ov(f.mid, `DC ${I.dc.fast} mid`, 'rgba(66,165,245,.45)', {dash:'dot', g:'dcf', leg:false}); }
+  try{ fxBoardLayers(b, x, shapes, ann, T); }catch(e){}
   if(I.hull.on){ [[I.hull.fast,1.2],[I.hull.slow,2.6]].forEach(([len,w],gi)=>{ const h=fxHma(b.c, len), up=h.map(()=>null), dn=h.map(()=>null);
       for(let i=2;i<n;i++){ if(h[i]==null||h[i-2]==null) continue; const u=h[i]>h[i-2]; (u?up:dn)[i]=h[i]; if(i>0 && h[i-1]!=null){ (u?up:dn)[i-1]=h[i-1]; } }
       ov(up, `Hull ${len}`, '#00e676', {w, g:'hull'+gi}); ov(dn, `Hull ${len}`, '#ff1744', {w, g:'hull'+gi, leg:false}); }); }
@@ -5308,7 +5606,7 @@ function fxDraw(){ const r=FXV.open, b=FXV.bars, el=$('fxchart'); if(!r||!b||!el
       ann.push({x:x[k.to], y:k.p, xref:'x', yref:'y', text:`${k.type}${k.dir>0?'↑':'↓'}`, showarrow:false, yshift:k.dir>0?9:-9, font:{size:m?9:10, color:k.type==='CHoCH'?'#f0883e':'#e3b341'}, xanchor:'right'}); });
     [[s.openH,'#ef5350','Swing high'],[s.openL,'#26a69a','Swing low']].forEach(([z,c,l])=>{ if(!z) return; shapes.push({type:'line', xref:'x', yref:'y', x0:x[z.i], x1:x[n-1], y0:z.p, y1:z.p, line:{color:c, width:1, dash:'dash'}, opacity:.7});
       ann.push({x:x[n-1], y:z.p, xref:'x', yref:'y', text:`${l} ${fmtN(z.p, z.p>=5000?0:2)}`, showarrow:false, xanchor:'right', yshift:z===s.openH?8:-8, font:{size:9, color:c}}); }); }
-  if(I.pivot.on){ const pv=fxPivots(b);
+  if(fxLay().piv){ const pv=fxPivots(b);
     if(pv){ const dg=v=>v>=5000?0:2, fs=m?8.5:9.5, pad=fxPad();
       FX_PIV_KEYS.forEach(([k,l,c])=>{ const y=pv.back[k]; if(!isFinite(y)) return;   // −1: previous day's levels across today's bars
         shapes.push({type:'line', xref:'x', yref:'y', x0:pv.back.fromIdx-0.5, x1:pv.back.toIdx+0.5, y0:y, y1:y, line:{color:c, width:k==='p'?1.4:1.1}, opacity:.85, name:'piv-back-'+k});
@@ -5320,6 +5618,7 @@ function fxDraw(){ const r=FXV.open, b=FXV.bars, el=$('fxchart'); if(!r||!b||!el
     b.x.forEach((iso,i)=>{ const dd=iso.slice(0,10), hm=iso.slice(11,16), lab=x[i];
       if(dd!==day){ day=dd; shapes.push({type:'line', xref:'x', yref:'paper', x0:lab, x1:lab, y0:0, y1:1, line:{color:'rgba(139,148,158,.45)', width:1}}); }
       if(hm>='17:00' && eve!==dd && FXV.tf!=='240'){ eve=dd; if(i && b.x[i-1].slice(0,10)===dd && b.x[i-1].slice(11,16)<'17:00') shapes.push({type:'line', xref:'x', yref:'paper', x0:lab, x1:lab, y0:0, y1:1, line:{color:'rgba(227,179,65,.4)', width:1, dash:'dot'}}); } }); }
+  if(fxLay().news){ try{ fxFeedMarks(r, b, x, shapes, ann, T, m); }catch(e){} } else { FXV.feedMarks=[]; FXV.feedTop=0; }
   const last=b.c[n-1]; shapes.push({type:'line', xref:'paper', yref:'y', x0:0, x1:1, y0:last, y1:last, line:{color:last>=b.o[n-1]?'#26a69a':'#ef5350', width:1, dash:'dot'}});
   ann.push({xref:'paper', x:1, y:last, yref:'y', text:fmtN(last, last>=5000?0:2), showarrow:false, xanchor:'right', bgcolor:last>=b.o[n-1]?'#26a69a':'#ef5350', font:{color:'#0d1117', size:10}, borderpad:2});
   const sub=[]; if(I.rsi.on) sub.push('rsi'); if(I.macd.on) sub.push('macd'); if(I.atr.on) sub.push('atr');
@@ -5330,9 +5629,9 @@ function fxDraw(){ const r=FXV.open, b=FXV.bars, el=$('fxchart'); if(!r||!b||!el
       T.push({type:'bar', x, y:hs, name:'MACD hist', marker:{color:hs.map(v=>v>=0?'rgba(63,185,80,.6)':'rgba(248,81,73,.6)')}, yaxis:ya, showlegend:false, hoverinfo:'skip'});
       T.push({type:'scatter', mode:'lines', x, y:mc, name:'MACD', line:{color:'#58a6ff', width:1.1}, yaxis:ya, showlegend:false}); T.push({type:'scatter', mode:'lines', x, y:sg, name:'Signal', line:{color:'#f85149', width:1.1}, yaxis:ya, showlegend:false}); }
     if(p==='atr') T.push({type:'scatter', mode:'lines', x, y:atr(b, I.atr.n), name:`ATR ${I.atr.n}`, line:{color:'#ff9e64', width:1.2}, yaxis:ya, showlegend:false}); });
-  const H=Math.max(360, window.innerHeight - (el.getBoundingClientRect().top||150) - 64), subH=sub.length? (m?0.16:0.15):0, gap=0.025, pb=sub.length*(subH+gap);
+  const H=Math.max((FXV.feedMarks&&FXV.feedMarks.length)?320:360, window.innerHeight - (el.getBoundingClientRect().top||150) - ((FXV.feedMarks&&FXV.feedMarks.length)?112:64)), subH=sub.length? (m?0.16:0.15):0, gap=0.025, pb=sub.length*(subH+gap);
   const v=FXV.view||fxDefView(n), yr=fxYRange(b, v);
-  const L=baseLayout({height:H, showlegend:true, hovermode:'x', dragmode:'pan', margin:{l:m?6:10, r:m?50:60, t:m?34:28, b:28}, bargap:0, shapes, annotations:ann,
+  const L=baseLayout({height:H, showlegend:true, hovermode:'x', dragmode:'pan', margin:{l:m?6:10, r:m?50:60, t:(m?34:28)+(FXV.feedTop||0), b:28}, bargap:0, shapes, annotations:ann,
     legend:{orientation:'h', y:1.0, yanchor:'bottom', x:0, font:{size:m?9:10.5}, bgcolor:'rgba(0,0,0,0)'}});
   L.xaxis={type:'category', range:v, rangeslider:{visible:false}, gridcolor:'rgba(48,54,61,.5)', nticks:m?4:8, tickangle:0, tickfont:{size:9}, anchor:sub.length?'y'+(sub.length+1):'y', showspikes:true, spikemode:'across', spikethickness:1, spikecolor:'#8b949e', spikedash:'dot'};
   L.yaxis={domain:[pb,1], side:'right', range:yr||undefined, gridcolor:'rgba(48,54,61,.5)', tickfont:{size:9}, fixedrange:false, showspikes:true, spikethickness:1, spikecolor:'#8b949e', spikedash:'dot'};
@@ -5342,8 +5641,10 @@ function fxDraw(){ const r=FXV.open, b=FXV.bars, el=$('fxchart'); if(!r||!b||!el
       const lo=a!=null?a:rg&&rg[0], hi=z!=null?z:rg&&rg[1]; if(lo==null||hi==null) return; FXV.view=[+lo, +hi]; fxZoomLbl(); const y=fxYRange(FXV.bars, FXV.view); if(!y) return;
       FXV.fitting=true; Plotly.relayout(el, {'yaxis.range':y}).then(()=>{ FXV.fitting=false; }, ()=>{ FXV.fitting=false; }); }); }
   fxZoomLbl();
+  try{ fxFeedBind(el); fxFeedFoot(); }catch(e){}
   // ATR trail hint (text only)
   const A=atr(b, I.atr.n||14).at(-1), d=last>=5000?0:2; const tfl=FX_TF.find(t=>t[0]===FXV.tf)[1];
+  try{ fxBoardMeta(b); }catch(e){}
   $('fxatr').innerHTML = A ? `<b>ATR(${I.atr.n||14}) ${tfl}</b> ${fmtN(A,d)} (${(A/last*100).toFixed(2)}%) · <b>2×ATR trail hint</b> ${fmtN(2*A,d)} pts → long trail ≈ ${fmtN(last-2*A,d)}, short trail ≈ ${fmtN(last+2*A,d)} <span class="sub">(suggested distance only — not an order)</span>` : ''; }
 async function fxBias(){ const r=FXV.open; if(!r) return; const el=$('fxbias'), I=fxInd(), me=r.id; const tfs=r.fy?[['15','15m'],['120','2H'],['D','D']]:[['D','D']];
   el.innerHTML='<span class="sub">Bias (Hull '+I.hull.slow+' slope + DC '+I.dc.fast+' last break):</span> '+tfs.map(([v,l])=>`<span class="fxb" id="fxb${v}">${l} …</span>`).join('')+'<span class="fxb fxsum" id="fxbsum"></span>';
@@ -5358,6 +5659,244 @@ async function fxBias(){ const r=FXV.open; if(!r) return; const el=$('fxbias'), 
   const all = ok.length===tfs.length && ok.every(x=>x===1) ? ['bu','Aligned ▲ long bias'] : ok.length===tfs.length && ok.every(x=>x===-1) ? ['be','Aligned ▼ short bias'] : ['mx','Mixed — no alignment'];
   sm.className='fxb fxsum '+all[0]; sm.textContent=all[1]; }
 
+
+
+/* Economic calendar + Spybot pins (same-origin data/*.json). Read-only. A missing feed never blocks charts. */
+const FEED = {cal:null, pins:null, calErr:'', pinErr:'', at:0};
+let CALF = 'all';
+function feedCanon(raw){
+  let u = String(raw||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(!u) return '';
+  const alias = {WTI:'CRUDEOIL',CRUDE:'CRUDEOIL',CRUDEOILM:'CRUDEOIL',NATGAS:'NATURALGAS',NATGASMINI:'NATURALGAS',GOLDM:'GOLD',GOLDTEN:'GOLD',GOLDMINI:'GOLD',SILVERM:'SILVER',SILVERMIC:'SILVER',ZINCMINI:'ZINC',ALUMINI:'ALUMINIUM',ALUMINIUMMINI:'ALUMINIUM',NIFTY50:'NIFTY'};
+  if(alias[u]) return alias[u];
+  if(u.startsWith('CRUDEOIL')) return 'CRUDEOIL';
+  if(u.startsWith('NATURALGAS') || u.startsWith('NATGAS')) return 'NATURALGAS';
+  if(u.startsWith('GOLD')) return 'GOLD';
+  if(u.startsWith('SILVER')) return 'SILVER';
+  if(u.startsWith('ZINC')) return 'ZINC';
+  if(u.startsWith('ALUMIN')) return 'ALUMINIUM';
+  if(u.startsWith('BANKNIFTY') || u.startsWith('FINNIFTY')) return u;
+  if(u.startsWith('NIFTY')) return 'NIFTY';
+  return u;
+}
+function feedStripSym(sym){
+  return String(sym||'').toUpperCase().replace(/^[A-Z]+:/,'').replace(/\d{2}[A-Z]{3}\d{2}FUT$/,'').replace(/\d{2}[A-Z]{3}FUT$/,'').replace(/FUT$/,'');
+}
+function feedTokens(row){
+  const out = [];
+  const add = v => { if(v) out.push(String(v)); };
+  add(row.key); add(row.label); add(row.name);
+  if(row.kind==='mcx'){
+    const mt = (LCFG.meta||{})[row.key]||{};
+    add(mt.underlying); add(mt.label);
+    add(feedStripSym((LCFG.map[row.key]||{}).symbol||''));
+  }
+  if(row.fy) add(feedStripSym(row.fy));
+  return out;
+}
+function feedHit(row, assets){
+  if(!row || !assets || !assets.length) return false;
+  const fam = new Set(feedTokens(row).map(feedCanon).filter(Boolean));
+  return assets.some(a => fam.has(feedCanon(a)));
+}
+function feedImp(v, dflt){ v=String(v||dflt||'low').toLowerCase(); return (v==='high'||v==='med'||v==='low')?v:'low'; }
+function fxFeedItems(){
+  const items = [];
+  ((FEED.cal&&FEED.cal.events)||[]).forEach(e=>{
+    if(!e || !e.when) return; const t = Date.parse(e.when); if(!isFinite(t)) return;
+    items.push({id:'c:'+(e.id||e.when), kind:'cal', when:t, title:e.title||'Event', impact:feedImp(e.impact,'low'), assets:e.assets||[], note:e.note||'', bias:'', url:''});
+  });
+  ((FEED.pins&&FEED.pins.pins)||[]).forEach(p=>{
+    if(!p || !p.when) return; const t = Date.parse(p.when); if(!isFinite(t)) return;
+    items.push({id:'p:'+(p.id||p.when), kind:'pin', when:t, title:p.headline||'Pin', impact:feedImp(p.severity,'med'), assets:p.assets||[], note:'', bias:p.bias||'', url:p.url||''});
+  });
+  items.sort((a,b)=>a.when-b.when);
+  return items;
+}
+function feedClip(s, n){ s=String(s||'').replace(/\s+/g,' ').trim(); return s.length>n ? s.slice(0,n-1)+'…' : s; }
+function fxFeedLab(s, n){ return feedClip(s,n).replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function istDateKey(ms){ const d=new Date(ms+5.5*3600*1000); return d.getUTCFullYear()+'-'+(d.getUTCMonth()+1)+'-'+d.getUTCDate(); }
+function calIsToday(ms, now){ return istDateKey(ms)===istDateKey(now); }
+function calBucket(it, now){
+  if(calIsToday(it.when, now) || (it.when>=now && it.when-now<=86400000)) return 'soon';
+  if(it.when>=now) return 'later';
+  return 'past';
+}
+function calWhen(ms){
+  const d=new Date(ms);
+  return {day:d.toLocaleDateString('en-IN',{timeZone:'Asia/Kolkata',weekday:'short',day:'2-digit',month:'short'}),
+    tm:d.toLocaleTimeString('en-IN',{timeZone:'Asia/Kolkata',hour:'2-digit',minute:'2-digit',hour12:false})};
+}
+function feedUrl(u){ try{ const x=new URL(u); if(x.protocol==='https:'||x.protocol==='http:') return x.href; }catch(e){} return ''; }
+function renderNextUp(){
+  const el=$('fxnextup'); if(!el) return;
+  const now=Date.now();
+  const show=fxFeedItems().filter(it=>it.kind==='cal' && it.impact==='high' && it.when>=now-60*1000).slice(0,2);
+  if(!show.length){ el.hidden=true; el.innerHTML=''; return; }
+  el.hidden=false;
+  el.innerHTML=`<button type="button" class="fxnextbtn" data-go="calendar"><span class="sub">Next up</span>${show.map(it=>`<b>${esc(feedClip(it.title,32))}</b> <span class="sub">${esc(fmtIST(new Date(it.when).toISOString()))} IST</span>`).join('<span class="sub">·</span>')}</button>`;
+}
+function calRowHTML(it){
+  const w=calWhen(it.when), now=Date.now(), soon=calBucket(it, now)==='soon', today=calIsToday(it.when, now);
+  const tags=(it.assets||[]).map(a=>`<span class="caltag">${esc(a)}</span>`).join('');
+  const kind=it.kind==='pin'?'<span class="calkind">PIN</span> ':'';
+  const extra=it.kind==='pin'?(it.bias?`<div class="calnote">${esc(it.bias)}</div>`:''):(it.note?`<div class="calnote">${esc(it.note)}</div>`:'');
+  const href=feedUrl(it.url);
+  const link=href?`<div class="calnote"><a href="${esc(href)}" target="_blank" rel="noopener noreferrer">source</a></div>`:'';
+  return `<article class="calrow${soon?' soon':''}${today?' today':''}"><div class="calwhen">${esc(w.day)}<br><b>${esc(w.tm)}</b></div><div><div class="caltitle">${kind}${esc(it.title)}</div><div class="calmeta2"><span class="calimp ${it.impact}">${it.impact}</span>${tags}</div>${extra}${link}</div></article>`;
+}
+function renderCalendar(){
+  const list=$('callist'); if(!list) return;
+  const meta=$('calmeta');
+  if(FEED.cal==null && FEED.pins==null){ if(meta) meta.textContent='Loading calendar…'; list.innerHTML=''; return; }
+  const now=Date.now();
+  let items=fxFeedItems();
+  if(CALF==='high') items=items.filter(it=>it.impact==='high');
+  else if(CALF==='pins') items=items.filter(it=>it.kind==='pin');
+  else if(CALF==='soon') items=items.filter(it=>calBucket(it, now)==='soon');
+  const soon=items.filter(it=>calBucket(it, now)==='soon');
+  const later=items.filter(it=>calBucket(it, now)==='later');
+  const past=items.filter(it=>calBucket(it, now)==='past').sort((a,b)=>b.when-a.when);
+  const errs=[FEED.calErr, FEED.pinErr].filter(Boolean);
+  if(meta){
+    const cu=FEED.cal&&FEED.cal.updated, pu=FEED.pins&&FEED.pins.updated;
+    const ok=`Events ${cu?fmtIST(cu):'–'} IST · pins ${pu?fmtIST(pu):'–'} IST · ${(FEED.cal&&FEED.cal.events||[]).length} scheduled · ${(FEED.pins&&FEED.pins.pins||[]).length} pins`;
+    meta.innerHTML=errs.length?`<span class="dn">${esc(errs.join(' · '))}</span> <span class="sub">${esc(ok)}. Charts still work if a feed is missing.</span>`:esc(ok);
+  }
+  if(!items.length){ list.innerHTML=`<div class="unavail">${errs.length?'Feed unavailable — charts still work.':'No events in this view.'}</div>`; return; }
+  const sec=(title, rows)=>rows.length?`<h3 class="calsec">${title}</h3>${rows.map(calRowHTML).join('')}`:'';
+  let html=sec('Today / next 24h', soon)+sec('Later', later);
+  if(past.length) html+=`<details class="calold"><summary>Earlier (${past.length})</summary>${past.map(calRowHTML).join('')}</details>`;
+  list.innerHTML=html||'<div class="unavail">No events in this view.</div>';
+}
+function setupCalendar(){
+  const root=$('tab-calendar'); if(!root || root.dataset.ready) return; root.dataset.ready='1';
+  const f=$('calfilters');
+  if(f) f.onclick=e=>{ const b=e.target.closest('button'); if(!b||!b.dataset.f) return; CALF=b.dataset.f; f.querySelectorAll('button').forEach(x=>x.classList.toggle('on', x===b)); renderCalendar(); };
+  const btn=$('calreload'); if(btn) btn.onclick=()=>feedLoad();
+  let y0=null, armed=false;
+  root.addEventListener('touchstart', e=>{ if(window.scrollY>12){ y0=null; return; } y0=e.touches[0].clientY; armed=false; }, {passive:true});
+  root.addEventListener('touchmove', e=>{ if(y0==null) return; const dy=e.touches[0].clientY-y0; const tip=$('calpull'); armed=dy>68; if(tip) tip.textContent=dy>24?(armed?'Release to reload':'Pull to reload'):''; }, {passive:true});
+  root.addEventListener('touchend', ()=>{ const tip=$('calpull'); if(tip) tip.textContent=''; if(armed) feedLoad(); y0=null; armed=false; }, {passive:true});
+}
+async function feedLoad(){
+  const btn=$('calreload'); if(btn){ btn.disabled=true; btn.textContent='Loading…'; }
+  const grab=async path=>{
+    try{
+      const r=await fetch(path+(path.includes('?')?'&':'?')+'t='+Date.now(), {cache:'no-store'});
+      if(!r.ok) return {ok:false, status:r.status};
+      return {ok:true, data:await r.json()};
+    }catch(e){ return {ok:false, status:0, err:(e&&e.message)||'failed'}; }
+  };
+  const [cal, pins]=await Promise.all([grab('data/calendar.json'), grab('data/news_pins.json')]);
+  if(cal.ok && cal.data && Array.isArray(cal.data.events)){ FEED.cal=cal.data; FEED.calErr=''; }
+  else { if(!FEED.cal) FEED.cal={events:[]}; FEED.calErr='calendar '+(cal.status||cal.err||'unavailable'); }
+  if(pins.ok && pins.data && Array.isArray(pins.data.pins)){ FEED.pins=pins.data; FEED.pinErr=''; }
+  else { if(!FEED.pins) FEED.pins={pins:[]}; FEED.pinErr='pins '+(pins.status||pins.err||'unavailable'); }
+  FEED.at=Date.now();
+  if(btn){ btn.disabled=false; btn.textContent='Reload'; }
+  renderCalendar();
+  try{ renderNextUp(); }catch(e){}
+  if(typeof FXV!=='undefined' && FXV.open && FXV.bars){ try{ fxDraw(); }catch(e){} }
+}
+function fxFeedPos(b, whenMs){
+  const n=b.t.length; if(!n) return null;
+  const daily=FXV.tf==='D';
+  if(daily){
+    const key=istDateKey(whenMs);
+    for(let i=0;i<n;i++){ if(istDateKey(b.t[i]*1000)===key) return {i, xnum:i, future:false}; }
+    if(whenMs>b.t[n-1]*1000 && (whenMs/1000-b.t[n-1])<=14*86400) return {i:null, xnum:null, future:true};
+    return null;
+  }
+  const t=whenMs/1000, step=Math.max(60, (+FXV.tf||1440)*60), tol=Math.max(step*2, 12*3600);
+  let best=-1, bestD=Infinity;
+  for(let i=0;i<n;i++){ const d=Math.abs(b.t[i]-t); if(d<bestD){ bestD=d; best=i; } }
+  if(best>=0 && bestD<=tol) return {i:best, xnum:best, future:false};
+  if(t>b.t[n-1] && (t-b.t[n-1])<=36*3600) return {i:null, xnum:null, future:true};
+  return null;
+}
+function fxFeedKeep(items, m){
+  const ranked=items.filter(it=>it.impact==='high'||it.impact==='med');
+  const src=(ranked.length?ranked:items).slice();
+  const cap=m?6:8;
+  if(src.length<=cap) return src.sort((a,b)=>a.when-b.when);
+  const now=Date.now();
+  const pins=src.filter(it=>it.kind==='pin').sort((a,b)=>(a.impact==='high'?0:1)-(b.impact==='high'?0:1) || b.when-a.when).slice(0,3);
+  const ups=src.filter(it=>it.kind==='cal' && it.when>=now-3600e3).sort((a,b)=>(a.impact==='high'?0:1)-(b.impact==='high'?0:1) || a.when-b.when);
+  const nextHigh=ups.find(it=>it.impact==='high')||ups[0];
+  const rest=[...pins, ...ups.filter(it=>it!==nextHigh)];
+  const out=[]; const seen=new Set();
+  [nextHigh, ...rest].forEach(it=>{ if(!it||seen.has(it.id)||out.length>=cap) return; seen.add(it.id); out.push(it); });
+  return out.sort((a,b)=>a.when-b.when);
+}
+function fxFeedMarks(r, b, x, shapes, ann, T, m){
+  FXV.feedTop=0; FXV.feedMarks=[];
+  if(!b||!b.t||!b.t.length) return;
+  const items=fxFeedKeep(fxFeedItems().filter(it=>feedHit(r, it.assets)), m);
+  const placed=[]; let fut=0;
+  items.forEach(it=>{
+    const pos=fxFeedPos(b, it.when); if(!pos) return;
+    let xnum=pos.xnum;
+    if(pos.future){
+      if(fut>=4) return;
+      const pad=Math.max(1.4, (typeof fxPad==='function'?fxPad():2.5)-0.25);
+      xnum=(b.c.length-0.5)+0.35+fut*Math.min(0.7, pad/4);
+      fut++;
+    } else {
+      const same=placed.filter(q=>q.i===pos.i).length;
+      if(same) xnum=pos.xnum+0.38*same;
+    }
+    placed.push(Object.assign({}, it, {i:pos.i, xnum, future:!!pos.future}));
+  });
+  placed.sort((a,b)=>a.when-b.when || a.xnum-b.xnum);
+  placed.forEach((p,i)=>{ p.n=i+1; });
+  let prev=null;
+  placed.forEach(p=>{ p.row=prev && Math.abs(p.xnum-prev.xnum)<2.4 ? 1-(prev.row||0) : 0; prev=p; });
+  FXV.feedMarks=placed;
+  if(!placed.length) return;
+  const gold='#e3b341';
+  placed.forEach(p=>{
+    const solid=p.kind==='pin';
+    shapes.push({type:'line', xref:'x', yref:'paper', x0:p.xnum, x1:p.xnum, y0:0, y1:1, line:{color:gold, width:solid?1.35:1, dash:solid?'dash':'dot'}, opacity:solid?0.85:0.5});
+    ann.push({x:p.xnum, y:1, xref:'x', yref:'paper', text:String(p.n), showarrow:false, yanchor:'bottom', xanchor:'center', yshift:2+(p.row?16:0), font:{size:10, color:solid?'#0d1117':gold, family:'ui-monospace, Menlo, Consolas, monospace'}, bgcolor:solid?gold:'rgba(13,17,23,.92)', bordercolor:gold, borderwidth:1.4, borderpad:2});
+  });
+  FXV.feedTop=placed.some(p=>p.row)?34:20;
+  const sx=[], sy=[], scd=[], sht=[];
+  placed.forEach(p=>{
+    if(p.i==null || x[p.i]==null) return;
+    sx.push(x[p.i]); sy.push(b.h[p.i]); scd.push(p.id);
+    const line=p.bias||p.note||'';
+    sht.push('<b>'+p.n+' · '+fxFeedLab(p.title, 90)+'</b>'+(line?'<br>'+fxFeedLab(line, 140):''));
+  });
+  if(sx.length) T.push({type:'scatter', mode:'markers', x:sx, y:sy, customdata:scd, hovertext:sht, name:'Events', legendgroup:'feed', showlegend:false, hovertemplate:'%{hovertext}<extra></extra>', yaxis:'y', marker:{size:m?12:10, color:'rgba(227,179,65,.28)', symbol:'circle', line:{color:gold, width:1}}});
+}
+function fxFeedFoot(){
+  const el=$('fxpin'); if(!el) return;
+  const marks=FXV.feedMarks||[];
+  if(!marks.length){ el.innerHTML=''; return; }
+  if(!marks.some(mk=>mk.id===FXV.feedSel)){
+    const pins=marks.filter(mk=>mk.kind==='pin').sort((a,b)=>b.when-a.when);
+    FXV.feedSel=(pins[0]||marks[0]).id;
+  }
+  const rows=marks.map(mk=>{
+    const line=mk.bias||mk.note||'';
+    const hollow=mk.kind!=='pin';
+    return `<button type="button" class="fxev${mk.id===FXV.feedSel?' on':''}" data-fid="${esc(mk.id)}"><i class="fxn${hollow?' hollow':''}" aria-hidden="true">${mk.n}</i><span><b>${esc(mk.title)}</b>${line?`<span class="sub">${esc(line)}</span>`:''}</span></button>`;
+  }).join('');
+  el.innerHTML=`<div class="fxevh">News and events on this chart</div><div class="fxevl">${rows}</div>`;
+}
+function fxFeedClick(ev){
+  const pt=ev.points&&ev.points[0];
+  if(!pt||!pt.data||pt.data.legendgroup!=='feed') return;
+  if(!pt.customdata) return;
+  FXV.feedSel=pt.customdata;
+  fxFeedFoot();
+}
+function fxFeedBind(el){
+  try{ el.removeListener('plotly_click', fxFeedClick); }catch(e){}
+  el.on('plotly_click', fxFeedClick);
+}
+RENDER.calendar=function(){ setupCalendar(); renderCalendar(); };
 
 /* ---------- MCX Hub: Flat (bento tiles) | Globe (round node map) — every MCX future, tap → full-screen chart ---------- */
 var FXH = {mode:null, spin:null, tbl:false, cards:null, t:null};
@@ -5377,11 +5916,18 @@ function fxHubBuild(){ if($('fxhub')) return $('fxhub'); const anchor=$('mcxpane
      <span class="seg" id="fxhubmode"><button type="button" data-v="flat">▦ Flat</button><button type="button" data-v="globe">◍ Globe</button></span></div>
    <div id="fxhubflat" class="fxbento"></div>
    <div id="fxhubglobe" class="fxgwrap" hidden></div>
-   <div class="fxhubft"><span class="fxhubnav"><button class="chip" type="button" data-go="heat">▦ Heat map</button><button class="chip" type="button" data-go="live">⚡ Live feed</button><button class="chip" type="button" data-go="macro">🌐 Macro</button><button class="chip" type="button" data-go="stocks">📊 Stocks</button></span>
-     <span class="fxhubbtns"><button class="btn" type="button" id="fxhubtbl">Show MCX table</button><button class="btn" type="button" id="fxhubcards">Global cards ▾</button></span></div>`;
+   <div id="fxnextup" class="fxnext" hidden></div>
+   <div class="fxhubft"><span class="fxhubnav"><button class="chip" type="button" data-mx="1" id="fxmxbtn">▦ Matrix</button><button class="chip" type="button" data-go="heat">▦ Heat map</button><button class="chip" type="button" data-go="live">⚡ Live feed</button><button class="chip" type="button" data-go="macro">🌐 Macro</button><button class="chip" type="button" data-go="stocks">📊 Stocks</button><button class="chip" type="button" data-go="calendar">📅 Calendar</button></span>
+     <span class="fxhubbtns"><button class="btn" type="button" id="fxhubtbl">Show MCX table</button><button class="btn" type="button" id="fxhubcards">Global cards ▾</button></span></div>
+   <div id="fxmx" class="fxmx"><div class="fxmxhd"><b>Signal matrix</b><button class="btn" type="button" id="fxmxreload">Reload</button></div>
+     <p class="fxmxnote" id="fxmxnote"></p>
+     <div class="fxmxwrap"><table class="fxmxt" id="fxmxtbl"></table></div>
+     <div class="mxkey"><span>▼ Bear</span><span>▲ Bull</span><span>● Flat</span></div></div>
+`;
   anchor.parentNode.insertBefore(d, anchor); anchor.style.marginTop='';
   seg('fxhubmode', v=>{ FXH.mode = v==='globe' ? 'globe' : 'flat'; lsSet('fx_hub', FXH.mode); fxHubPaint(); });
-  d.addEventListener('click', e=>{ const g=e.target.closest('[data-go]'); if(g){ e.preventDefault(); showTab(g.dataset.go); window.scrollTo(0,0); return; }
+  d.addEventListener('click', e=>{ const mx=e.target.closest('[data-mx]'); if(mx){ e.preventDefault(); const box=$('fxmx'); if(box) box.scrollIntoView({block:'nearest'}); mxToggle(!(box&&!box.hidden)); return; }
+    const g=e.target.closest('[data-go]'); if(g){ e.preventDefault(); showTab(g.dataset.go); window.scrollTo(0,0); return; }
     if(e.target.closest('#fxgspin')){ FXH.spin=!fxHubSpin(); lsSet('fx_hubspin', FXH.spin?1:0); fxHubPaint(); return; }
     if(e.target.closest('#fxgcore')){ FXH.tbl=true; fxHubApply(); const t=$('mcxpanel'); if(t) t.scrollIntoView({behavior:'smooth', block:'start'}); return; }
     const c=e.target.closest('[data-id]'); if(c) fxOpen(c.dataset.id); });
@@ -5401,7 +5947,7 @@ function fxHubApply(){ const m=fxHubMode(), B=document.body;
   const fl=$('fxhubflat'), gl=$('fxhubglobe'); if(fl) fl.hidden = m!=='flat'; if(gl) gl.hidden = m!=='globe'; }
 function fxHubPaint(){ if(!fxHubBuild()) return; fxHubApply(); const keys=fxHubKeys(), favs=fxFavs(), live=keys.filter(k=>liveQuote(k)).length;
   $('fxhubsub').textContent = keys.length ? `· ${keys.length} futures${live?` · ${live} live`:''} · tap for chart` : '';
-  if(fxHubMode()==='globe') fxHubGlobe(keys, favs); else fxHubFlat(keys, favs); }
+  if(fxHubMode()==='globe') fxHubGlobe(keys, favs); else fxHubFlat(keys, favs); try{ renderNextUp(); }catch(e){} }
 function fxHubFlat(keys, favs){ const el=$('fxhubflat'); if(!keys.length){ el.innerHTML='<div class="sub fxhempty">No MCX contracts in this build yet — rebuild to load the Fyers symbol master.</div>'; return; }
   const tile=(k, big)=>{ const q=fxHubQuote(k), f=favs.includes('M:'+k), mt=(LCFG.meta||{})[k]||{}, p=q&&q.pct;
     return `<button type="button" class="fxht${big?' big':''}${f?' fav':''}" data-id="M:${esc(k)}" style="--tint:${fxPerfCol(p,3)}" title="${esc(mt.label||k)} — open chart">
@@ -5437,6 +5983,8 @@ function fxHubGlobe(keys, favs){ const el=$('fxhubglobe');
   fxHubPaint();
   DataLayer.subscribe(k=>{ if(k!=null && !(LCFG.meta||{})[k]) return; if(FXH.t) return;
     FXH.t=setTimeout(()=>{ FXH.t=null; const tc=$('tab-commodities'); if(!tc || tc.classList.contains('active')) fxHubPaint(); }, 1500); });
+  try{ setupCalendar(); feedLoad(); }catch(e){ console.warn('calendar feed', e); }
+  try{ const rb=$('fxmxreload'); if(rb) rb.onclick=()=>mxLoad(); const show=lsGet('fx_mx'); mxToggle(show==null?true:!!show); }catch(e){ console.warn('matrix', e); }
 })();
 
 const startTab = (location.hash||'#commodities').slice(1);
