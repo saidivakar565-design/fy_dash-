@@ -1,8 +1,35 @@
 {
-  "updated": "2026-11-02T16:40:00+05:30",
+  "updated": "2026-11-03T08:40:00+05:30",
   "tz": "Asia/Kolkata",
   "source": "spybot",
   "pins": [
+    {
+      "id": "qeshm-us-strike-2026-11-03",
+      "when": "2026-11-03T06:12:43+05:30",
+      "headline": "WSJ says the US struck Iran's Qeshm Island (Reuters: officials call them \"defensive\"); Brent's 1% pop faded within the hour",
+      "bias": "crude two-way, with escalation risk back but faded so far; gold and silver neutral to soft; Nifty a small headwind",
+      "assets": [
+        "CRUDEOIL",
+        "GOLD",
+        "SILVER",
+        "NIFTY"
+      ],
+      "severity": "med",
+      "url": ""
+    },
+    {
+      "id": "iran-talks-authority-2026-11-02",
+      "when": "2026-11-02T19:01:05+05:30",
+      "headline": "Iran's President says the Supreme Leader gave the government authority for US talks; Brent fell $3 in 10 minutes and settled down 7.6% at $104.77",
+      "bias": "crude bearish as the war premium unwinds on the talks track; gold mildly bullish on lower inflation fears; Nifty bullish via lower crude",
+      "assets": [
+        "CRUDEOIL",
+        "GOLD",
+        "NIFTY"
+      ],
+      "severity": "high",
+      "url": ""
+    },
     {
       "id": "hormuz-sanctions-doha-2026-11-02",
       "when": "2026-11-02T13:11:55+05:30",
