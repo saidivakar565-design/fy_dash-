@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0d1117">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-O24V1F27f8pb0glCkelh3cVHLNiHAJ5gCaVtq2aNch8=' 'sha256-0TopaehSpUgjqQkoJwN//emnNlISxntXT/MQKooVYhw=' 'sha256-yMcHJsd5RsbQzxue5nFMo4MQ53lpJlVgN30qsPhbr94='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; manifest-src 'self'; worker-src 'self' blob:; connect-src 'self' https://api-t1.fyers.in https://public.fyers.in wss://socket.fyers.in ws://127.0.0.1:8765 ws://localhost:8765 ws://*:8765 wss://*:8765 wss://*.ts.net; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-O24V1F27f8pb0glCkelh3cVHLNiHAJ5gCaVtq2aNch8=' 'sha256-0TopaehSpUgjqQkoJwN//emnNlISxntXT/MQKooVYhw=' 'sha256-Gds3YPkdbe1NjtwDemwwxgv53nhuiCdhzqy7qcGdj+M='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; manifest-src 'self'; worker-src 'self' blob:; connect-src 'self' https://api-t1.fyers.in https://public.fyers.in wss://socket.fyers.in ws://127.0.0.1:8765 ws://localhost:8765 ws://*:8765 wss://*:8765 wss://*.ts.net; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <link rel="icon" href="icon-192.png">
 <title>Cockpit · Fyers live</title>
@@ -264,6 +264,10 @@ body.fxhub-globe:not(.fxhub-tbl) #mcxtbl,body.fxhub-globe:not(.fxhub-tbl) #mcxno
 .fxlay button[aria-pressed="true"]{background:var(--txt);color:var(--bg);border-color:var(--txt)}
 .fxmeta{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:12px;line-height:1.35;margin-top:4px}
 .fxmeta b{font-weight:700}
+.drbanner{all:unset;display:block;box-sizing:border-box;width:100%;cursor:pointer;background:#1f3a5f;color:#e6edf3;border-radius:6px;padding:6px 8px;margin:4px 0;font-size:12px}
+.drnew{font-style:normal;font-size:9px;background:#1f6feb;color:#fff;border-radius:3px;padding:0 4px;vertical-align:middle}
+table.drt td{font-variant-numeric:tabular-nums;font-size:11.5px}
+#fxdrlatest.on{border-color:var(--gold);color:var(--gold)}
 .fxmx{margin-top:8px}
 .fxmxhd{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
 .fxmxhd b{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
@@ -5590,6 +5594,79 @@ async function mxLoad(){
   }
 }
 
+/* ================= DC20 RETEST (added 3 Nov 2026, read-only) =================
+   Same four rules as the laptop Market Radar screener (dc20_retest.py). Donchian 20 from the 20 bars BEFORE the bar judged,
+   Mid=(U+L)/2, ATR = mean True Range of the 14 bars before. Intraday TFs use completed bars only; Daily uses today's forming bar.
+   R1 mid retest long · R2 lower-band bull retest · R3 mid retest short / upper-band bear retest · R4 failed retest exit
+   (+ R2/R3U invalid = close back through the band within 5 bars). Uses the same Fyers GET /data/history as the Signal matrix. */
+var DR={rows:[], flags:[], err:'', busy:false, at:0, latest:true, timer:null};
+const DR_RULES={R1_MID_LONG:['R1 Mid retest','long','Midline retest after DC20 breakout'],R2_LOWER_BULL:['R2 Lower band','long','Lower band touch & hold'],
+  R3_MID_SHORT:['R3 Mid retest','short','Midline retest after DC20 breakdown'],R3_UPPER_BEAR:['R3 Upper band','short','Upper band touch & reject'],
+  R4_FAIL_LONG:['R4 Failed (long)','exit','Closed below mid after breakout — exit long'],R4_FAIL_SHORT:['R4 Failed (short)','exit','Closed above mid after breakdown — exit short'],
+  R2_INVALID:['R2 invalid','exit','Closed back below the lower band'],R3U_INVALID:['R3U invalid','exit','Closed back above the upper band']};
+const DR_LEG=['R1_MID_LONG','R3_MID_SHORT','R4_FAIL_LONG','R4_FAIL_SHORT'];
+const DR_SPAN={'240':14400,'120':7200,'15':900};
+function drEval(b, formingLast){ const N=20, n=b.c.length, out=[]; let leg=null, band=[];
+  for(let i=N+1;i<n;i++){ let U=-Infinity, L=Infinity; for(let j=i-N;j<i;j++){ if(b.h[j]>U) U=b.h[j]; if(b.l[j]<L) L=b.l[j]; } const M=(U+L)/2;
+    let tr=0, k=0; for(let j=Math.max(1,i-14);j<i;j++){ tr+=Math.max(b.h[j]-b.l[j], Math.abs(b.h[j]-b.c[j-1]), Math.abs(b.l[j]-b.c[j-1])); k++; } const A=k?tr/k:0;
+    const h=b.h[i], l=b.l[i], c=b.c[i], ev=[];
+    if(leg && i-leg.i>20) leg=null; const legT=leg?leg.t:null;
+    if(leg && i>leg.i){ if(leg.dir==='long'){ if(c<M){ ev.push(['R4_FAIL_LONG',M]); leg=null; } else if(l<=M) ev.push(['R1_MID_LONG',M]); }
+      else { if(c>M){ ev.push(['R4_FAIL_SHORT',M]); leg=null; } else if(h>=M) ev.push(['R3_MID_SHORT',M]); } }
+    const keep=[], hit={}; band.forEach(z=>{ if(i-z.i>5) return; if((z.dir==='long'&&c<z.lvl)||(z.dir==='short'&&c>z.lvl)) hit[z.dir]=z; else keep.push(z); });
+    band=keep.filter(z=>!hit[z.dir]); if(hit.long) ev.push(['R2_INVALID',hit.long.lvl]); if(hit.short) ev.push(['R3U_INVALID',hit.short.lvl]);
+    if(l<=L && c>L){ ev.push(['R2_LOWER_BULL',L]); band.push({dir:'long',lvl:L,i}); }
+    if(h>=U && c<U){ ev.push(['R3_UPPER_BEAR',U]); band.push({dir:'short',lvl:U,i}); }
+    const form=formingLast && i===n-1;
+    if(!form){ if(c>U) leg={dir:'long',i,t:b.t[i]}; else if(c<L) leg={dir:'short',i,t:b.t[i]}; }
+    if(i>=n-3) ev.forEach(([rule,lvl])=>out.push({rule, entry:lvl, inv:lvl, U, M, L, atr:A, close:c, ago:n-1-i, forming:form, t:b.t[i], leg:DR_LEG.includes(rule)&&legT?legT:null})); }
+  return out; }
+function drLoadRows(){ return (typeof mxPick==='function'?mxPick():[]); }
+async function drScan(manual){
+  if(DR.busy) return; DR.rows=drLoadRows(); if(!DR.rows.length){ DR.err='No MCX contracts in this build.'; drPaint(); return; }
+  if(typeof FyAuth==='undefined' || !FyAuth.valid()){ DR.err='Log in on the Live feed tab to scan DC20 retests from Fyers bars.'; drPaint(); return; }
+  DR.busy=true; DR.err=''; const flags=[], bad=[]; const now=Date.now()/1000;
+  for(const row of DR.rows){ const r=fxRow('M:'+row.key); if(!r||!r.fy){ bad.push(row.name+': no symbol'); continue; }
+    for(const [res,lab,days] of MX_TF){
+      try{ const raw=await fxHistory(r.fy, res, days, !!manual && res!=='D'); let bars=fxCandles(raw, res);
+        let forming=false;
+        if(res==='D'){ forming = bars.t.length>0 && fxIST(bars.t.at(-1)).slice(0,10)===fxIST(now).slice(0,10); }
+        else { const sp=DR_SPAN[res]; while(bars.t.length && bars.t.at(-1)+sp>now){ ['t','x','lab','o','h','l','c','v'].forEach(f=>{ if(bars[f]) bars[f]=bars[f].slice(0,-1); }); } }
+        const q=typeof fxHubQuote==='function'?fxHubQuote(row.key):null, px=q&&q.ltp!=null?q.ltp:(raw.length?raw.at(-1)[4]:null);
+        drEval(bars, forming).forEach(f=>{ const p=(f.ago===0&&px!=null)?px:f.close; flags.push(Object.assign(f, {key:row.key, name:row.name, res, tf:lab, price:p,
+          dist:f.atr?(p-f.entry)/f.atr:null, id:['MCX',row.key,res,f.rule,DR_LEG.includes(f.rule)&&f.leg?f.leg:f.t].join('|')})); });
+      }catch(e){ bad.push(row.name+' '+lab+': '+((e&&e.message)||'unavailable')); } } }
+  DR.busy=false; DR.at=Date.now(); DR.flags=flags; if(bad.length && !flags.length) DR.err=bad.slice(0,2).join(' · ');
+  drAlert(flags.filter(f=>f.ago===0)); drPaint(); }
+function drSeen(){ const s=lsGet('fx_dr_seen'); return Array.isArray(s)?s:[]; }
+function drAlert(cur){ const seen=drSeen(), set=new Set(seen), fresh=cur.filter(f=>!set.has(f.id)); if(!fresh.length) return;
+  fresh.forEach(f=>{ f.isNew=true; seen.push(f.id); }); lsSet('fx_dr_seen', seen.slice(-400));
+  const d=v=>v>=5000?0:2, txt=fresh.slice(0,4).map(f=>`${f.name} ${f.tf} ${DR_RULES[f.rule][0]} @ ${fmtN(f.entry,d(f.entry))}`).join(' · ')+(fresh.length>4?` · +${fresh.length-4} more`:'');
+  const bn=$('fxdrnew'); if(bn){ bn.hidden=false; bn.textContent='🔔 '+fresh.length+' new DC20 retest flag'+(fresh.length>1?'s':'')+': '+txt; }
+  try{ if(navigator.vibrate) navigator.vibrate([120,60,120]); }catch(e){}
+  try{ if(window.Notification && Notification.permission==='granted' && navigator.serviceWorker){ navigator.serviceWorker.getRegistration().then(reg=>{ const o={body:txt, tag:'dc20retest', renotify:true, icon:'icon-192.png'};
+      if(reg && reg.showNotification) reg.showNotification('DC20 Retest · MCX', o); else new Notification('DC20 Retest · MCX', o); }).catch(()=>{}); } }catch(e){} }
+function drPaint(){ const el=$('fxdrtbl'); if(!el) return; const note=$('fxdrnote');
+  if(note){ note.textContent = DR.err || (DR.busy?'Scanning…':(DR.at?'Scanned '+new Date(DR.at).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Kolkata'})+' IST · auto every 5 min while open · ':'')+'DC20 (20 bars before each bar) · Mid=(U+L)/2 · Dist = (price − entry) ÷ ATR14 of that TF. Intraday: completed bars; D: today’s bar is provisional.'); note.classList.toggle('warn', !!DR.err); }
+  const pb=$('fxdrperm'); if(pb){ const p=window.Notification?Notification.permission:'unsupported'; pb.hidden = p==='granted' || p==='unsupported'; }
+  const lb=$('fxdrlatest'); if(lb) lb.classList.toggle('on', DR.latest);
+  const order={R4_FAIL_LONG:0,R4_FAIL_SHORT:0,R1_MID_LONG:1,R3_MID_SHORT:1,R2_LOWER_BULL:2,R3_UPPER_BEAR:2};
+  const rows=DR.flags.filter(f=>!DR.latest||f.ago===0).sort((a,b)=>a.ago-b.ago||(order[a.rule]??3)-(order[b.rule]??3));
+  if(!rows.length){ el.innerHTML='<tr><td class="sub" style="padding:10px">'+(DR.at?'No DC20 retest flags on '+(DR.latest?'the latest bar':'the last 3 bars')+'.':'Waiting for Fyers bars…')+'</td></tr>'; return; }
+  const d=v=>v>=5000?0:2, head='<thead><tr><th>Contract</th><th>TF</th><th>Rule</th><th>Entry</th><th>Invalid if</th><th>Price</th><th>ATR</th></tr></thead>';
+  el.innerHTML=head+rows.map(f=>{ const R=DR_RULES[f.rule], cl=R[1]==='long'?'bull':R[1]==='short'?'bear':'flat', inv=(R[1]==='long'?'close < ':R[1]==='short'?'close > ':'')+fmtN(f.inv,d(f.inv));
+    const when=f.res==='D'?fxIST(f.t).slice(5,10):fxIST(f.t).slice(5,16).replace('T',' ');
+    return `<tr><th><button type="button" data-id="M:${esc(f.key)}">${esc(f.name)}${f.isNew?' <em class="drnew">NEW</em>':''}<span>${esc(when)}${f.ago?' · '+f.ago+' bar ago':''}${f.forming?' · forming':''}</span></button></th><td>${esc(f.tf)}</td>`+
+      `<td><span class="mxchip ${cl}" title="${esc(R[2])}"><b>${esc(R[0])}</b><i>${esc(R[1])}</i></span></td><td>${fmtN(f.entry,d(f.entry))}</td><td>${inv}</td><td>${fmtN(f.price,d(f.price))}</td><td>${f.dist==null?'–':(f.dist>0?'+':'')+f.dist.toFixed(2)}</td></tr>`; }).join(''); }
+function drToggle(force){ const el=$('fxdr'); if(!el) return; const on=force!=null?!!force:el.hidden; el.hidden=!on; const b=$('fxdrbtn'); if(b) b.classList.toggle('on', on);
+  try{ lsSet('fx_dr', on?1:0); }catch(e){} if(on){ drPaint(); drScan(false); } clearInterval(DR.timer); if(on) DR.timer=setInterval(()=>{ if(document.visibilityState==='visible') drScan(false); }, 300000); }
+function drInit(){ const box=$('fxdr'); if(!box) return;
+  box.addEventListener('click', e=>{ if(e.target.closest('#fxdrreload')){ drScan(true); return; } if(e.target.closest('#fxdrlatest')){ DR.latest=!DR.latest; drPaint(); return; }
+    if(e.target.closest('#fxdrperm')){ try{ Notification.requestPermission().then(()=>drPaint()); }catch(_){} return; }
+    if(e.target.closest('#fxdrnew')){ $('fxdrnew').hidden=true; return; } });
+  const btn=$('fxdrbtn'); if(btn) btn.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); drToggle(); if(!box.hidden) box.scrollIntoView({block:'nearest'}); });
+  const show=lsGet('fx_dr'); drToggle(show==null?true:!!show); }
+
 function fxDraw(){ const r=FXV.open, b=FXV.bars, el=$('fxchart'); if(!r||!b||!el) return; FXV.feedTop=0; const I=fxInd(), n=b.c.length, x=b.lab||b.x, m=isMobile();
   const T=[], shapes=[], ann=[], panes=[]; const ov=(y,name,color,o={})=>T.push(Object.assign({type:'scatter', mode:'lines', x, y, name, line:{color, width:o.w||1.2, dash:o.dash||'solid'}, hoverinfo:'skip', yaxis:'y', showlegend:o.leg!==false, legendgroup:o.g}, o.extra||{}));
   T.push({type:'candlestick', x, open:b.o, high:b.h, low:b.l, close:b.c, name:r.label, increasing:{line:{color:'#26a69a',width:1}, fillcolor:'#26a69a'}, decreasing:{line:{color:'#ef5350',width:1}, fillcolor:'#ef5350'}, showlegend:false, yaxis:'y'});
@@ -5917,12 +5994,17 @@ function fxHubBuild(){ if($('fxhub')) return $('fxhub'); const anchor=$('mcxpane
    <div id="fxhubflat" class="fxbento"></div>
    <div id="fxhubglobe" class="fxgwrap" hidden></div>
    <div id="fxnextup" class="fxnext" hidden></div>
-   <div class="fxhubft"><span class="fxhubnav"><button class="chip" type="button" data-mx="1" id="fxmxbtn">▦ Matrix</button><button class="chip" type="button" data-go="heat">▦ Heat map</button><button class="chip" type="button" data-go="live">⚡ Live feed</button><button class="chip" type="button" data-go="macro">🌐 Macro</button><button class="chip" type="button" data-go="stocks">📊 Stocks</button><button class="chip" type="button" data-go="calendar">📅 Calendar</button></span>
+   <div class="fxhubft"><span class="fxhubnav"><button class="chip" type="button" data-mx="1" id="fxmxbtn">▦ Matrix</button><button class="chip" type="button" id="fxdrbtn">⇅ DC20 Retest</button><button class="chip" type="button" data-go="heat">▦ Heat map</button><button class="chip" type="button" data-go="live">⚡ Live feed</button><button class="chip" type="button" data-go="macro">🌐 Macro</button><button class="chip" type="button" data-go="stocks">📊 Stocks</button><button class="chip" type="button" data-go="calendar">📅 Calendar</button></span>
      <span class="fxhubbtns"><button class="btn" type="button" id="fxhubtbl">Show MCX table</button><button class="btn" type="button" id="fxhubcards">Global cards ▾</button></span></div>
    <div id="fxmx" class="fxmx"><div class="fxmxhd"><b>Signal matrix</b><button class="btn" type="button" id="fxmxreload">Reload</button></div>
      <p class="fxmxnote" id="fxmxnote"></p>
      <div class="fxmxwrap"><table class="fxmxt" id="fxmxtbl"></table></div>
      <div class="mxkey"><span>▼ Bear</span><span>▲ Bull</span><span>● Flat</span></div></div>
+   <div id="fxdr" class="fxmx" hidden><div class="fxmxhd"><b>DC20 retest</b><span><button class="btn" type="button" id="fxdrlatest">Latest bar</button> <button class="btn" type="button" id="fxdrperm" hidden>🔔 Enable alerts</button> <button class="btn" type="button" id="fxdrreload">Rescan</button></span></div>
+     <button type="button" class="drbanner" id="fxdrnew" hidden></button>
+     <p class="fxmxnote" id="fxdrnote"></p>
+     <div class="fxmxwrap"><table class="fxmxt drt" id="fxdrtbl"></table></div>
+     <div class="mxkey"><span>R1 mid retest long · R2 lower-band bull · R3 mid retest short / upper-band bear · R4 failed retest = exit · read-only, no orders</span></div></div>
 `;
   anchor.parentNode.insertBefore(d, anchor); anchor.style.marginTop='';
   seg('fxhubmode', v=>{ FXH.mode = v==='globe' ? 'globe' : 'flat'; lsSet('fx_hub', FXH.mode); fxHubPaint(); });
@@ -5985,6 +6067,7 @@ function fxHubGlobe(keys, favs){ const el=$('fxhubglobe');
     FXH.t=setTimeout(()=>{ FXH.t=null; const tc=$('tab-commodities'); if(!tc || tc.classList.contains('active')) fxHubPaint(); }, 1500); });
   try{ setupCalendar(); feedLoad(); }catch(e){ console.warn('calendar feed', e); }
   try{ const rb=$('fxmxreload'); if(rb) rb.onclick=()=>mxLoad(); const show=lsGet('fx_mx'); mxToggle(show==null?true:!!show); }catch(e){ console.warn('matrix', e); }
+  try{ drInit(); }catch(e){ console.warn('dc20 retest', e); }
 })();
 
 const startTab = (location.hash||'#commodities').slice(1);
