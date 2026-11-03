@@ -1,7 +1,7 @@
 /* Offline shell for the cockpit. Network first (always the newest file when online), cached copy when offline.
    Never caches or touches Fyers API / socket traffic.
    data/*.json is fetched no-store and stored only as an offline fallback of the last good copy — not pinned at install. */
-const C = 'cockpit-cal-20261102b';
+const C = 'cockpit-dc20rt-20261103';
 self.addEventListener('install', e => { e.waitUntil(caches.open(C).then(c => c.addAll(['./', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'])).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== C).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', e => {
