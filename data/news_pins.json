@@ -1,8 +1,44 @@
 {
-  "updated": "2026-11-03T08:40:00+05:30",
+  "updated": "2026-11-03T16:35:00+05:30",
   "tz": "Asia/Kolkata",
   "source": "spybot",
   "pins": [
+    {
+      "id": "hormuz-conditions-force-2026-11-03",
+      "when": "2026-11-03T12:12:35+05:30",
+      "headline": "Iranian official says conditions first for Hormuz and Iran will respond forcefully; Brent +1.3% to $107.21, then faded",
+      "bias": "crude briefly bullish, faded on mediation news; Nifty minor headwind",
+      "assets": [
+        "CRUDEOIL",
+        "NIFTY"
+      ],
+      "severity": "med",
+      "url": ""
+    },
+    {
+      "id": "sbi-q2-op-miss-2026-11-03",
+      "when": "2026-11-03T13:47:00+05:30",
+      "headline": "SBI Q2 operating profit misses badly despite headline beat; stock −3.5% to ₹961.55 low, closed ₹970",
+      "bias": "Bank Nifty/PSU banks bearish read-across",
+      "assets": [
+        "NIFTY",
+        "BANKNIFTY",
+        "SBIN"
+      ],
+      "severity": "med",
+      "url": ""
+    },
+    {
+      "id": "irib-hormuz-tankers-fire-2026-11-03",
+      "when": "2026-11-03T15:47:49+05:30",
+      "headline": "IRIB says three oil tankers caught fire in Hormuz (unverified)",
+      "bias": "crude bullish risk if confirmed, small reaction so far",
+      "assets": [
+        "CRUDEOIL"
+      ],
+      "severity": "med",
+      "url": ""
+    },
     {
       "id": "qeshm-us-strike-2026-11-03",
       "when": "2026-11-03T06:12:43+05:30",
