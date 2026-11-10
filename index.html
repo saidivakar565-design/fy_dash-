@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0d1117">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-O24V1F27f8pb0glCkelh3cVHLNiHAJ5gCaVtq2aNch8=' 'sha256-0TopaehSpUgjqQkoJwN//emnNlISxntXT/MQKooVYhw=' 'sha256-Gds3YPkdbe1NjtwDemwwxgv53nhuiCdhzqy7qcGdj+M=' 'sha256-2Ovy2n1ybf3P1RmYJYX+KyJvHcS94rTHPUWRDcLShuo=' 'sha256-BiN4e1KUVIAZ77xwrGkWnWJMCynUPmPMzANFebYWlaw=' 'sha256-vM746bTlsQ/XDKJOG8xtfgUUXwYrkmYz8BWizeXBMJ0=' 'sha256-BlxGl9kVBJvh+OA/6+qbcVZkXUtUfi7IPj5Vz96OQfM='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; manifest-src 'self'; worker-src 'self' blob:; connect-src 'self' https://api-t1.fyers.in https://public.fyers.in wss://socket.fyers.in ws://127.0.0.1:8765 ws://localhost:8765 ws://*:8765 wss://*:8765 wss://*.ts.net https://desktop-3565pu7.tailece833.ts.net:8443 https://desktop-3565pu7.tailece833.ts.net:* https://*.tailece833.ts.net:* https://*.ts.net:* http://127.0.0.1:* http://localhost:*; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-O24V1F27f8pb0glCkelh3cVHLNiHAJ5gCaVtq2aNch8=' 'sha256-0TopaehSpUgjqQkoJwN//emnNlISxntXT/MQKooVYhw=' 'sha256-Gds3YPkdbe1NjtwDemwwxgv53nhuiCdhzqy7qcGdj+M=' 'sha256-2Ovy2n1ybf3P1RmYJYX+KyJvHcS94rTHPUWRDcLShuo=' 'sha256-hHNYnFebn9fC5G48TQDGpFUq+9GurzfucVWD+7cjNLE=' 'sha256-vM746bTlsQ/XDKJOG8xtfgUUXwYrkmYz8BWizeXBMJ0=' 'sha256-3igVrlUY62xOX6eRdTIkwBF9N61fp2Gq+9QwMEIO5BU='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; manifest-src 'self'; worker-src 'self' blob:; connect-src 'self' https://api-t1.fyers.in https://public.fyers.in wss://socket.fyers.in ws://127.0.0.1:8765 ws://localhost:8765 ws://*:8765 wss://*:8765 wss://*.ts.net https://desktop-3565pu7.tailece833.ts.net:8443 https://desktop-3565pu7.tailece833.ts.net:* https://*.tailece833.ts.net:* https://*.ts.net:* http://127.0.0.1:* http://localhost:*; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <link rel="icon" href="icon-192.png">
 <title>Cockpit · Fyers live</title>
@@ -7127,12 +7127,13 @@ function draw(){var j=ST.data,f=ST.f,tf=ST.tf,box=$("dcc-chart"); if(!j||!box) r
   var fi={}; for(var i=0;i<N;i++) fi[lab(B.t[i],tf)]=i;
   var sel=f.tf===tf?f:null, selI=sel?fi[sel.bar_time]:null;
   var SP=L.spv?stdPiv(B,tf):null;
-  var vals=[]; for(i=off;i<end;i++){vals.push(B.h[i],B.l[i]); if(L.dc20&&a.D20.U[i]!=null) vals.push(a.D20.U[i],a.D20.L[i]); if(L.hull&&a.H[i]!=null) vals.push(a.H[i]);}
-  if(!vals.length){vals.push(B.h[N-1],B.l[N-1]);}
-  if(sel&&L.lv){vals.push(sel.entry,sel.invalidation);}
-  if(SP&&end===N){[SP.back,SP.adv].forEach(function(q){vals.push(q.p,q.r1,q.s1);});}
-  var SH=L.shn&&window.SHNv2?window.SHNv2.get(a):null; if(SH) window.SHNv2.vals(SH,off,end).forEach(function(p){vals.push(p);}); // SHN
-  var OVL=(window.CK&&CK.overlayArr)?CK.overlayArr(B,tf):null; if(OVL){for(i=off;i<end;i++) if(OVL[i]!=null&&isFinite(OVL[i])) vals.push(OVL[i]);}
+  function pxOk(v){return v!=null&&isFinite(+v)&&+v>0;}
+  var vals=[]; for(i=off;i<end;i++){if(pxOk(B.h[i])) vals.push(+B.h[i]); if(pxOk(B.l[i])) vals.push(+B.l[i]); if(L.dc20&&pxOk(a.D20.U[i])) vals.push(+a.D20.U[i]); if(L.dc20&&pxOk(a.D20.L[i])) vals.push(+a.D20.L[i]); if(L.hull&&pxOk(a.H[i])) vals.push(+a.H[i]);}
+  if(!vals.length){if(pxOk(B.h[N-1])) vals.push(+B.h[N-1]); if(pxOk(B.l[N-1])) vals.push(+B.l[N-1]);}
+  if(sel&&L.lv){if(pxOk(sel.entry)) vals.push(+sel.entry); if(pxOk(sel.invalidation)) vals.push(+sel.invalidation);}
+  if(SP&&end===N){[SP.back,SP.adv].forEach(function(q){if(pxOk(q.p)) vals.push(+q.p); if(pxOk(q.r1)) vals.push(+q.r1); if(pxOk(q.s1)) vals.push(+q.s1);});}
+  var SH=L.shn&&window.SHNv2?window.SHNv2.get(a):null; if(SH) window.SHNv2.vals(SH,off,end).forEach(function(p){if(pxOk(p)) vals.push(+p);}); // SHN
+  var OVL=(window.CK&&CK._ovOn&&CK.overlayArr)?CK.overlayArr(B,tf):null; if(OVL){for(i=off;i<end;i++) if(pxOk(OVL[i])) vals.push(+OVL[i]);}
   var lo=Math.min.apply(null,vals),hi=Math.max.apply(null,vals),rg=(hi-lo)||1; lo-=0.04*rg; hi+=0.05*rg; rg=hi-lo;
   if(L.smc) a.S.ob.concat(a.S.fvg).forEach(function(o){ if(o.top>hi&&o.bot>hi||o.top<lo&&o.bot<lo) o._off=1; else o._off=0; });
   function Y(p){return T+(hi-p)/rg*ph;}
@@ -7179,7 +7180,7 @@ function draw(){var j=ST.data,f=ST.f,tf=ST.tf,box=$("dcc-chart"); if(!j||!box) r
   fires.forEach(function(g){var k=fi[g.bar_time]; if(k==null||k<off||k>=end) return; var lg=g.dir==="long",ex=g.dir.indexOf("exit")===0,c=ex?"ex":lg?"up":"dn",cx=X(k);
     var yy=lg?Y(B.l[k])+14:Y(B.h[k])-14; s+='<path d="M'+(cx-5).toFixed(1)+' '+(lg?yy+7:yy-7).toFixed(1)+' L'+(cx+5).toFixed(1)+' '+(lg?yy+7:yy-7).toFixed(1)+' L'+cx.toFixed(1)+' '+yy.toFixed(1)+'z" class="fm '+c+(g===sel?' sel':'')+'"><title>'+esc(g.rule+" "+g.bar_time)+'</title></path>';});
   var SHS=SH?window.SHNv2.svg(SH,{X:X,Y:Y,off:off,end:end,step:step,B:B,dec:dec,tf:tf,ut:L.shnut}):null; if(SHS) s+=SHS.s; // SHN
-  if(typeof OVL!=="undefined"&&OVL){var op=[]; for(i=off;i<end;i++) if(OVL[i]!=null&&isFinite(OVL[i])) op.push(X(i).toFixed(1)+","+Y(OVL[i]).toFixed(1)); if(op.length) s+='<polyline points="'+op.join(" ")+'" class="ovl"><title>MCX vs COMEX / Brent in INR per MCX unit (indicative)</title></polyline>';}
+  if(typeof OVL!=="undefined"&&OVL){var op=[]; for(i=off;i<end;i++) if(OVL[i]!=null&&isFinite(+OVL[i])&&+OVL[i]>0) op.push(X(i).toFixed(1)+","+Y(+OVL[i]).toFixed(1)); if(op.length) s+='<polyline points="'+op.join(" ")+'" class="ovl"><title>MCX vs COMEX / Brent in INR per MCX unit (indicative)</title></polyline>';}
   s+='</g>';
   // retest levels from the fire (right tags)
   var tags=[];
@@ -8183,12 +8184,13 @@ function overlayArr(B, tf){
   var gtf=gtfOf(tf), key=pair.sym+"|"+gtf+"|"+pair.kind;
   if(CK._ovKey!==key){ CK._ovKey=key; CK._ovMap=null; loadOv(pair, gtf, key); return null; }
   if(!CK._ovMap) return null;
+  function ovPx(v){return v!=null&&isFinite(+v)&&+v>0?+v:null;}
   return B.t.map(function(t){
     var nt=normT(t);
-    if(tf==="D") return CK._ovMap[dayKey(nt)];
+    if(tf==="D") return ovPx(CK._ovMap[dayKey(nt)]);
     var best=null, bd=1e15, span=spanOf(tf);
-    Object.keys(CK._ovMap).forEach(function(k){ if(k.length>12) return; var d=Math.abs(+k-nt); if(d<bd){ bd=d; best=CK._ovMap[k]; } });
-    return bd<=span*0.6?best:CK._ovMap[dayKey(nt)];
+    Object.keys(CK._ovMap).forEach(function(k){ if(!/^\d+$/.test(k)) return; var d=Math.abs(+k-nt); if(d<bd){ bd=d; best=CK._ovMap[k]; } });
+    return ovPx(bd<=span*0.6?best:CK._ovMap[dayKey(nt)]);
   });
 }
 function loadOv(pair, gtf, key){
@@ -8202,7 +8204,7 @@ function loadOv(pair, gtf, key){
     g.bars.forEach(function(b){
       var fxv=gtf==="D"?fmap[dayKey(b[0])]:null;
       if(fxv==null){ var bd=1e15; fx.bars.forEach(function(f){ var d=Math.abs(f[0]-b[0]); if(d<bd){ bd=d; fxv=f[4]; } }); }
-      var y=convert(pair.kind, b[4], fxv); if(y==null) return;
+      var y=convert(pair.kind, b[4], fxv); if(y==null||!isFinite(y)||y<=0) return;
       CK._ovMap[b[0]]=y; CK._ovMap[dayKey(b[0])]=y;
     });
     if(window.DC20Chart&&DC20Chart.redraw) DC20Chart.redraw();
