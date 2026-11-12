@@ -121,3 +121,39 @@ When the phone has candles it computes these itself and ignores the block. A lap
 | `signals.optional_n` | How many signals the scan marked optional |
 
 `bars_ago` of 0 is the last closed bar.
+
+## Sector rotation (optional)
+
+The phone computes this from closed daily candles when it has them, and ignores the block for any sector it can recompute. A laptop scanner may include it so the rotation view can draw before those candles are fetched. Omit a sector, or leave a field out, when you do not have it. The phone shows a blank, not a sample number.
+
+`benchmark` is the Fyers symbol the ratios used, `NSE:NIFTY50-INDEX`.
+
+`formula` is fixed. Do not send a different one. RS = sector close ÷ Nifty 50 close on the same IST day. RS-Ratio = 100 × EMA10(RS) ÷ EMA26(RS). RS-Momentum = 100 × RS-Ratio ÷ EMA6(RS-Ratio). The EMA seed is the simple average of the first length. Quadrants: both at or above 100 Leading, ratio at or above 100 and momentum below 100 Weakening, ratio below 100 and momentum at or above 100 Improving, both below 100 Lagging.
+
+Weekly fields use the last closed day of each IST week, then the same formula. `days` is how many trailing daily points have been in the latest daily quadrant.
+
+```json
+"rotation": {
+  "asof": "2026-11-12 15:45 IST",
+  "benchmark": "NSE:NIFTY50-INDEX",
+  "sectors": [
+    {
+      "id": "bank",
+      "fyers": "NSE:NIFTYBANK-INDEX",
+      "quadrant": "Leading",
+      "rs_ratio": 102.4,
+      "rs_mom": 101.1,
+      "days": 6,
+      "chg_1w": 1.8,
+      "chg_1m": 4.2,
+      "tail_d": [{ "x": 101.2, "y": 100.4 }, { "x": 102.4, "y": 101.1 }],
+      "quadrant_w": "Leading",
+      "rs_ratio_w": 103.1,
+      "rs_mom_w": 100.6,
+      "tail_w": [{ "x": 102.2, "y": 100.2 }, { "x": 103.1, "y": 100.6 }]
+    }
+  ]
+}
+```
+
+`id` matches `data/nse_sectors.json`. `tail_d` and `tail_w` are the last few RS-Ratio / RS-Momentum points, oldest first. The numbers above are a shape example. The phone does not ship this object.

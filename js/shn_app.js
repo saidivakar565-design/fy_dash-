@@ -1,7 +1,8 @@
 /* SHN Matrix v3.4 in the cockpit. Read-only candles and quotes. No orders, no tokens.
    MCX trade state: Fyers history already used by the Daily Board (closed bars, throttled).
    Falls back to the laptop Market Radar address (Tailscale) when Fyers is not logged in.
-   NSE screener: laptop shn_v34_state.json when reachable, else a watchlist of at most 30 symbols on Daily. */
+   NSE screener: laptop shn_v34_state.json when reachable, else a watchlist of at most 30 symbols on Daily.
+   NSE rotation: closed daily Fyers history for the sector indices in data/nse_sectors.json, cached on the phone. */
 (function () {
   'use strict';
   if (!window.SHNv34) { console.warn('SHN v3.4 engine missing'); return; }
@@ -281,7 +282,13 @@
   }
   function due(fy, tf) {
     var hit = MEM[fy + '|' + tf];
-    if (!hit || !hit.bars || !hit.bars.length) return true;
+    if (!hit || !hit.bars || !hit.bars.length) {
+      if (normTf(tf) === 'D') {
+        var rec = lj(rotKey(fy));
+        if (rec && rec.bars && rec.bars.length && Date.now() - (rec.at || 0) < TF.D.refresh) return false;
+      }
+      return true;
+    }
     var spec = TF[normTf(tf)];
     if (!spec) return false;
     return Date.now() - (hit.at || 0) >= spec.refresh;
@@ -321,6 +328,7 @@
       .then(function (j) {
         lap.ok = true; lap.at = Date.now(); lap.err = ''; lap.json = j; lap.scan = j && j.generated_ist ? j.generated_ist : istStamp(Date.now());
         applyJson(j);
+        applyRotation(j);
         return true;
       }, function (e) {
         clearTimeout(t); lap.ok = false; lap.at = Date.now(); lap.err = e && e.name === 'AbortError' ? 'no answer' : String(e && e.message || e);
@@ -362,6 +370,503 @@
       MEM[fy + '|' + tf] = { fy: fy, tf: tf, bars: null, snap: snap, at: Date.now(), src: 'laptop', sym: r.symbol, name: r.name || r.symbol };
     });
   }
+
+  var MAP = null;
+  var MAPERR = '';
+  var ROTC = Object.create(null);
+  var RSC = Object.create(null);
+  var ROTV = { sec: null, left: 0, jobs: 0, eqLeft: 0, eqJobs: 0 };
+  var QCOL = { Leading: '#3fb950', Weakening: '#e3b341', Lagging: '#f85149', Improving: '#58a6ff' };
+  var SPAL = ['#58a6ff', '#3fb950', '#e3b341', '#bc8cff', '#ffa657', '#ff7b72', '#79c0ff', '#d2a8ff', '#56d4dd', '#f2cc60', '#a5d6ff', '#ff9bce', '#7ee787', '#c9d1d9', '#9ecbff', '#f0883e'];
+  var QUAD_RANK = { Leading: 0, Weakening: 1, Improving: 2, Lagging: 3 };
+
+  function loadMap() {
+    if (MAP) return Promise.resolve(MAP);
+    if (loadMap.p) return loadMap.p;
+    loadMap.p = fetch('data/nse_sectors.json', { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (j) {
+        if (!j || !j.benchmark || !j.benchmark.fyers || !Array.isArray(j.sectors)) throw new Error('sector map');
+        MAP = j;
+        MAPERR = '';
+        return j;
+      }, function (e) {
+        loadMap.p = null;
+        MAPERR = String(e && e.message || e);
+        throw e;
+      });
+    return loadMap.p;
+  }
+  function rotKey(fy) { return 'shn_rot_' + String(fy || '').replace(/[^A-Za-z0-9]+/g, '_'); }
+  function rotSave(fy, bars, src, kind) {
+    var rec = { at: Date.now(), src: src || 'fyers', bars: bars.slice(-420), fy: fy, kind: kind || 'idx' };
+    if (!lj(rotKey(fy), rec)) return;
+    var idx = lj('shn_rot_idx') || [];
+    idx = idx.filter(function (x) { return x && x.fy !== fy; });
+    idx.unshift({ fy: fy, kind: rec.kind });
+    var eqs = idx.filter(function (x) { return x.kind === 'eq'; });
+    while (eqs.length > 48) {
+      var drop = eqs.pop();
+      lj(rotKey(drop.fy), null);
+      idx = idx.filter(function (x) { return x.fy !== drop.fy; });
+    }
+    lj('shn_rot_idx', idx);
+  }
+  function loadRotCache() {
+    var idx = lj('shn_rot_idx') || [];
+    idx.forEach(function (x) {
+      if (!x || !x.fy) return;
+      var rec = lj(rotKey(x.fy));
+      if (!rec || !rec.bars) return;
+      put(rec.fy, 'D', rec.bars, rec.src || 'saved', false);
+      if (MEM[rec.fy + '|D']) MEM[rec.fy + '|D'].at = rec.at || 0;
+    });
+  }
+  function barsOf(fy) {
+    var hit = MEM[fy + '|D'];
+    if (hit && hit.bars && hit.bars.length >= 40) return hit.bars;
+    var rec = lj(rotKey(fy));
+    if (rec && rec.bars && rec.bars.length >= 40) return rec.bars;
+    return null;
+  }
+  function pairs(bars) {
+    return (bars || []).map(function (b) { return [b[0], b[4]]; });
+  }
+  function numOrNull(v) { return v == null || !isFinite(+v) ? null : +v; }
+  function quadOrNull(q) {
+    return q === 'Leading' || q === 'Weakening' || q === 'Lagging' || q === 'Improving' ? q : null;
+  }
+  function applyRotation(j) {
+    lap.rot = null;
+    var r = j && j.rotation;
+    if (!r || !Array.isArray(r.sectors)) return;
+    var sectors = {};
+    r.sectors.forEach(function (s) {
+      if (!s || typeof s.id !== 'string') return;
+      var q = quadOrNull(s.quadrant);
+      var x = numOrNull(s.rs_ratio);
+      var y = numOrNull(s.rs_mom);
+      if (!q || x == null || y == null) return;
+      var tail = function (arr) {
+        if (!Array.isArray(arr)) return [];
+        var out = [];
+        arr.forEach(function (p) {
+          if (!p || !isFinite(+p.x) || !isFinite(+p.y)) return;
+          out.push({ x: +p.x, y: +p.y, q: quadOrNull(p.q) });
+        });
+        return out;
+      };
+      sectors[s.id] = {
+        q: q, x: x, y: y,
+        qW: quadOrNull(s.quadrant_w), xW: numOrNull(s.rs_ratio_w), yW: numOrNull(s.rs_mom_w),
+        days: s.days == null || !isFinite(+s.days) ? null : Math.max(0, Math.round(+s.days)),
+        chg1w: numOrNull(s.chg_1w), chg1m: numOrNull(s.chg_1m),
+        tailD: tail(s.tail_d), tailW: tail(s.tail_w)
+      };
+    });
+    lap.rot = { asof: r.asof || null, sectors: sectors };
+  }
+  function fetchRot(fy, kind) {
+    if (!fy) return Promise.resolve(null);
+    var k = fy + '|D';
+    if (busy[k]) return busy[k];
+    var h = auth();
+    if (!h) return Promise.resolve(null);
+    var now = Math.floor(Date.now() / 1000);
+    var haveBars = barsOf(fy);
+    var have = haveBars && haveBars.length ? haveBars[haveBars.length - 1][0] - TF.D.span : 0;
+    var from = have > 0 ? have : now - TF.D.days * 86400;
+    var url = 'https://api-t1.fyers.in/data/history?symbol=' + encodeURIComponent(fy) + '&resolution=D&date_format=0&range_from=' + Math.floor(from) + '&range_to=' + now + '&cont_flag=1';
+    busy[k] = throttle(function () {
+      return fetch(url, { method: 'GET', headers: { Authorization: h }, credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store' })
+        .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { r: r, j: j }; }); })
+        .then(function (x) {
+          var j = x.j || {};
+          if (x.r.status === 429 || j.code === 429 || j.code === -429) throw new Error('429');
+          if (j.s !== 'ok' && j.s !== 'no_data') throw new Error(j.message || ('HTTP ' + x.r.status));
+          var prev = barsOf(fy) || [];
+          var merged = dropForming(cleanRows(prev.concat(j.candles || [])), 'D', 'NSE');
+          if (merged.length >= 40) {
+            put(fy, 'D', merged, 'fyers', false);
+            rotSave(fy, merged, 'fyers', kind || 'idx');
+          }
+          return MEM[k] || null;
+        });
+    });
+    busy[k] = busy[k].then(function (v) { delete busy[k]; return v; }, function (e) { delete busy[k]; throw e; });
+    return busy[k];
+  }
+  function rotTail() {
+    var n = +(lj('shn_rot_tail') || 6);
+    return n === 5 || n === 8 ? n : 6;
+  }
+  function sectorView(sec, tf) {
+    var tailN = rotTail();
+    var blank = { id: sec.id, name: sec.name, short: sec.short || sec.name, q: null, x: null, y: null, days: null, chg1w: null, chg1m: null, tail: [], src: '' };
+    if (window.SHNRot && MAP) {
+      var own = barsOf(sec.fyers);
+      var bench = barsOf(MAP.benchmark.fyers);
+      if (own && bench) {
+        var key = sec.id + '|' + own.length + '|' + own[own.length - 1][0] + '|' + own[own.length - 1][4] + '|' + bench.length + '|' + bench[bench.length - 1][0];
+        if (!Object.prototype.hasOwnProperty.call(ROTC, key)) ROTC[key] = SHNRot.build(pairs(own), pairs(bench));
+        var built = ROTC[key];
+        var head = built && (tf === 'W' ? built.weeklyHead : built.head);
+        if (head) {
+          var series = tf === 'W' ? built.weekly : built.daily;
+          return {
+            id: sec.id, name: sec.name, short: sec.short || sec.name,
+            q: head.q, x: head.x, y: head.y,
+            days: built.days, chg1w: built.chg1w, chg1m: built.chg1m,
+            tail: (series || []).slice(-tailN), src: 'bars'
+          };
+        }
+      }
+    }
+    var lapS = lap.rot && lap.rot.sectors && lap.rot.sectors[sec.id];
+    if (!lapS) return blank;
+    if (tf === 'W') {
+      if (!(lapS.qW && lapS.xW != null && lapS.yW != null)) return blank;
+      var tw = lapS.tailW.length ? lapS.tailW : [{ x: lapS.xW, y: lapS.yW, q: lapS.qW }];
+      return { id: sec.id, name: sec.name, short: sec.short || sec.name, q: lapS.qW, x: lapS.xW, y: lapS.yW, days: lapS.days, chg1w: lapS.chg1w, chg1m: lapS.chg1m, tail: tw.slice(-tailN), src: 'laptop' };
+    }
+    var td = lapS.tailD.length ? lapS.tailD : [{ x: lapS.x, y: lapS.y, q: lapS.q }];
+    return { id: sec.id, name: sec.name, short: sec.short || sec.name, q: lapS.q, x: lapS.x, y: lapS.y, days: lapS.days, chg1w: lapS.chg1w, chg1m: lapS.chg1m, tail: td.slice(-tailN), src: 'laptop' };
+  }
+  function leadingSectors() {
+    if (!MAP) return [];
+    return MAP.sectors.filter(function (sec) {
+      var v = sectorView(sec, 'D');
+      return v && v.q === 'Leading' && v.src;
+    });
+  }
+  function leadingNames() {
+    return leadingSectors().map(function (sec) { return sec.short || sec.name; });
+  }
+  function leaderSyms() {
+    var out = [];
+    leadingSectors().forEach(function (sec) {
+      (sec.stocks || []).forEach(function (sym) { if (out.indexOf(sym) < 0) out.push(sym); });
+    });
+    return out;
+  }
+  function symbolLeads(sym) { return leaderSyms().indexOf(sym) >= 0; }
+  function rsPoint(stockFy, benchFy) {
+    if (!window.SHNRot || !stockFy || !benchFy) return null;
+    var s = barsOf(stockFy), b = barsOf(benchFy);
+    if (!s || !b) return null;
+    var key = stockFy + '>' + benchFy + '|' + s.length + '|' + s[s.length - 1][0] + '|' + b.length + '|' + b[b.length - 1][0];
+    if (!Object.prototype.hasOwnProperty.call(RSC, key)) RSC[key] = SHNRot.lastPoint(pairs(s), pairs(b));
+    return RSC[key];
+  }
+  function paintRotIf() {
+    var onRot = (lj('shn_nse_view') || 'scan') === 'rot';
+    var onLead = false;
+    try { onLead = !!scan().leadersOnly && UNIV !== 'mcx'; } catch (e) {}
+    if (!onRot && !onLead) return;
+    if (!$('tab-shn') || !$('tab-shn').classList.contains('active')) return;
+    var y = window.scrollY;
+    paintScreener();
+    window.scrollTo(0, y);
+  }
+  function queueIndices() {
+    if (queueIndices.busy) return queueIndices.busy;
+    queueIndices.busy = loadMap().then(function (map) {
+      if (!auth()) return null;
+      var fys = [map.benchmark.fyers];
+      map.sectors.forEach(function (s) { if (s && s.fyers && fys.indexOf(s.fyers) < 0) fys.push(s.fyers); });
+      var jobs = fys.filter(function (fy) { return due(fy, 'D'); });
+      ROTV.jobs = jobs.length;
+      ROTV.left = jobs.length;
+      return jobs.reduce(function (p, fy) {
+        return p.then(function () {
+          return fetchRot(fy, 'idx').catch(function () { return null; }).then(function () {
+            ROTV.left--;
+            if (ROTV.left === 0 || ROTV.left % 4 === 0) paintRotIf();
+          });
+        });
+      }, Promise.resolve());
+    }).then(function (v) { queueIndices.busy = null; return v; }, function (e) { queueIndices.busy = null; throw e; });
+    return queueIndices.busy;
+  }
+  function queueSyms(syms) {
+    if (!auth()) return Promise.resolve();
+    var jobs = [];
+    (syms || []).forEach(function (sym) {
+      var fy = fyOfNse(sym);
+      if (fy && due(fy, 'D') && jobs.indexOf(fy) < 0) jobs.push(fy);
+    });
+    if (!jobs.length) return Promise.resolve();
+    ROTV.eqJobs = jobs.length;
+    ROTV.eqLeft = jobs.length;
+    return jobs.reduce(function (p, fy) {
+      return p.then(function () {
+        return fetchRot(fy, 'eq').catch(function () { return null; }).then(function () {
+          ROTV.eqLeft--;
+          if (ROTV.eqLeft === 0 || ROTV.eqLeft % 3 === 0) paintRotIf();
+        });
+      });
+    }, Promise.resolve());
+  }
+  function queueLeaders() {
+    if (queueLeaders.busy) return queueLeaders.busy;
+    queueLeaders.busy = queueIndices().then(function () { return queueSyms(leaderSyms()); })
+      .then(function (v) { queueLeaders.busy = null; return v; }, function (e) { queueLeaders.busy = null; throw e; });
+    return queueLeaders.busy;
+  }
+  function rotSort() {
+    var s = lj('shn_rot_sort');
+    if (!s || !s.k) return { k: 'quad', dir: 1 };
+    return s;
+  }
+  function sortSectors(rows) {
+    var s = rotSort();
+    var dir = s.dir === -1 ? -1 : 1;
+    rows.sort(function (a, b) {
+      var av, bv;
+      if (s.k === 'x') { av = a.x; bv = b.x; }
+      else if (s.k === 'y') { av = a.y; bv = b.y; }
+      else if (s.k === 'w') { av = a.chg1w; bv = b.chg1w; }
+      else if (s.k === 'm') { av = a.chg1m; bv = b.chg1m; }
+      else if (s.k === 'days') { av = a.days; bv = b.days; }
+      else { av = a.q ? QUAD_RANK[a.q] : null; bv = b.q ? QUAD_RANK[b.q] : null; }
+      if (av == null && bv == null) return a.name.localeCompare(b.name);
+      if (av == null) return 1;
+      if (bv == null) return -1;
+      if (av === bv) return a.name.localeCompare(b.name);
+      return av < bv ? -dir : dir;
+    });
+  }
+  function fmtRS(v) { return v == null || !isFinite(+v) ? '–' : (+v).toFixed(2); }
+  function pctHTML(v) {
+    if (v == null || !isFinite(+v)) return '–';
+    var col = v > 0 ? '#3fb950' : v < 0 ? '#f85149' : 'inherit';
+    return '<span style="color:' + col + '">' + (v > 0 ? '+' : '') + (+v).toFixed(1) + '%</span>';
+  }
+  function fmtDays(v) { return v == null || !isFinite(+v) ? '–' : (Math.round(v) + 'd'); }
+  function quadHTML(q) {
+    if (!q) return '<span class="qtag">–</span>';
+    return '<span class="qtag ' + q + '">' + esc(q) + '</span>';
+  }
+  function viewToggle(on) {
+    return '<div class="shnmk"><button type="button" data-v="scan"' + (on === 'scan' ? ' class="on"' : '') + '>Scan</button><button type="button" data-v="rot"' + (on === 'rot' ? ' class="on"' : '') + '>Rotation</button></div>';
+  }
+  function rotHead(onView) {
+    return '<div class="panel" style="margin-top:0"><div class="shnmk"><button type="button" data-u="nse" class="on">NSE stocks</button><button type="button" data-u="mcx">MCX instruments</button></div>' + viewToggle(onView);
+  }
+  function rrgSVG(rows) {
+    var pts = [];
+    rows.forEach(function (r) { (r.tail || []).forEach(function (p) { if (p && isFinite(p.x) && isFinite(p.y)) pts.push(p); }); });
+    if (!pts.length) return '<div class="shnempty" id="shn-rrg">No closed-bar rotation yet.</div>';
+    var minX = 100, maxX = 100, minY = 100, maxY = 100;
+    pts.forEach(function (p) {
+      if (p.x < minX) minX = p.x;
+      if (p.x > maxX) maxX = p.x;
+      if (p.y < minY) minY = p.y;
+      if (p.y > maxY) maxY = p.y;
+    });
+    var px = Math.max(0.6, (maxX - minX) * 0.18), py = Math.max(0.6, (maxY - minY) * 0.18);
+    minX -= px; maxX += px; minY -= py; maxY += py;
+    if (maxX - minX < 1.2) { var mx = (maxX + minX) / 2; minX = mx - 0.6; maxX = mx + 0.6; }
+    if (maxY - minY < 1.2) { var my = (maxY + minY) / 2; minY = my - 0.6; maxY = my + 0.6; }
+    var W = 380, H = 300, L = 32, R = 10, T = 18, B = 26;
+    function X(x) { return L + (x - minX) / (maxX - minX) * (W - L - R); }
+    function Y(y) { return T + (maxY - y) / (maxY - minY) * (H - T - B); }
+    var x0 = X(100), y0 = Y(100);
+    var parts = [
+      '<rect x="' + L + '" y="' + T + '" width="' + (x0 - L) + '" height="' + (y0 - T) + '" fill="rgba(88,166,255,0.10)"/>',
+      '<rect x="' + x0 + '" y="' + T + '" width="' + (X(maxX) - x0) + '" height="' + (y0 - T) + '" fill="rgba(63,185,80,0.12)"/>',
+      '<rect x="' + L + '" y="' + y0 + '" width="' + (x0 - L) + '" height="' + (Y(minY) - y0) + '" fill="rgba(248,81,73,0.10)"/>',
+      '<rect x="' + x0 + '" y="' + y0 + '" width="' + (X(maxX) - x0) + '" height="' + (Y(minY) - y0) + '" fill="rgba(227,179,65,0.10)"/>',
+      '<line x1="' + x0.toFixed(1) + '" y1="' + T + '" x2="' + x0.toFixed(1) + '" y2="' + (H - B) + '" stroke="#8b949e" stroke-width="1"/>',
+      '<line x1="' + L + '" y1="' + y0.toFixed(1) + '" x2="' + (W - R) + '" y2="' + y0.toFixed(1) + '" stroke="#8b949e" stroke-width="1"/>',
+      '<text x="' + (W - R - 2) + '" y="' + (T + 12) + '" fill="#3fb950" font-size="10" text-anchor="end">Leading</text>',
+      '<text x="' + (W - R - 2) + '" y="' + (H - B - 4) + '" fill="#e3b341" font-size="10" text-anchor="end">Weakening</text>',
+      '<text x="' + (L + 2) + '" y="' + (H - B - 4) + '" fill="#f85149" font-size="10">Lagging</text>',
+      '<text x="' + (L + 2) + '" y="' + (T + 12) + '" fill="#58a6ff" font-size="10">Improving</text>'
+    ];
+    var placed = [];
+    rows.forEach(function (r, i) {
+      var tail = (r.tail || []).filter(function (p) { return p && isFinite(p.x) && isFinite(p.y); });
+      if (!tail.length) return;
+      var col = SPAL[i % SPAL.length];
+      var line = tail.map(function (p) { return X(p.x).toFixed(1) + ',' + Y(p.y).toFixed(1); }).join(' ');
+      parts.push('<polyline points="' + line + '" fill="none" stroke="' + col + '" stroke-width="1.4" opacity="0.9"/>');
+      tail.forEach(function (p, j) {
+        var last = j === tail.length - 1;
+        parts.push('<circle cx="' + X(p.x).toFixed(1) + '" cy="' + Y(p.y).toFixed(1) + '" r="' + (last ? 3.5 : 1.6) + '" fill="' + col + '"/>');
+      });
+      var head = tail[tail.length - 1];
+      var tx = X(head.x), ty = Y(head.y);
+      var spots = [[0, -8], [0, 16], [22, -8], [-22, -8], [0, -20], [28, 6], [-28, 6], [0, 28]];
+      var spot = null;
+      for (var n = 0; n < spots.length; n++) {
+        var sx = tx + spots[n][0], sy = ty + spots[n][1];
+        if (sy < T + 12 || sy > H - B - 8) continue;
+        var hit = placed.some(function (p) { return Math.abs(p.x - sx) < 32 && Math.abs(p.y - sy) < 11; });
+        if (!hit) { spot = { x: sx, y: sy }; break; }
+      }
+      if (!spot) return;
+      placed.push(spot);
+      parts.push('<text x="' + spot.x.toFixed(1) + '" y="' + spot.y.toFixed(1) + '" fill="' + col + '" font-size="9" text-anchor="middle">' + esc(r.short) + '</text>');
+    });
+    parts.push('<text x="' + ((L + W - R) / 2) + '" y="' + (H - 6) + '" fill="#8b949e" font-size="10" text-anchor="middle">RS-Ratio</text>');
+    parts.push('<text x="11" y="' + ((T + H - B) / 2) + '" fill="#8b949e" font-size="10" text-anchor="middle" transform="rotate(-90 11 ' + ((T + H - B) / 2).toFixed(1) + ')">RS-Mom</text>');
+    var label = rows.filter(function (r) { return r.q; }).map(function (r) { return r.short + ' ' + r.q; }).join(', ');
+    return '<div class="rrgbox" id="shn-rrg"><svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="Sector rotation. ' + esc(label) + '">' + parts.join('') + '</svg></div>';
+  }
+  function bindRotation(host) {
+    host.querySelectorAll('.shnmk button[data-u]').forEach(function (b) {
+      b.onclick = function () {
+        UNIV = b.dataset.u === 'mcx' ? 'mcx' : 'nse';
+        lj('shn_univ', UNIV);
+        ROTV.sec = null;
+        paintScreener();
+        window.scrollTo(0, 0);
+        if (UNIV === 'nse') ensureNse(); else queueMcx(scan().tf);
+      };
+    });
+    host.querySelectorAll('[data-v]').forEach(function (b) {
+      b.onclick = function () {
+        lj('shn_nse_view', b.dataset.v);
+        ROTV.sec = null;
+        paintScreener();
+        window.scrollTo(0, 0);
+      };
+    });
+    host.querySelectorAll('[data-rtf]').forEach(function (b) {
+      b.onclick = function () { lj('shn_rot_tf', b.dataset.rtf); paintRotation(host); };
+    });
+    host.querySelectorAll('[data-tail]').forEach(function (b) {
+      b.onclick = function () { lj('shn_rot_tail', +b.dataset.tail); paintRotation(host); };
+    });
+    host.querySelectorAll('[data-rsort]').forEach(function (b) {
+      b.onclick = function () {
+        var cur = rotSort();
+        var k = b.dataset.rsort;
+        var dir = cur.k === k ? -cur.dir : (k === 'quad' ? 1 : -1);
+        lj('shn_rot_sort', { k: k, dir: dir });
+        var y = window.scrollY;
+        paintRotation(host);
+        window.scrollTo(0, y);
+      };
+    });
+    host.querySelectorAll('[data-sec]').forEach(function (b) {
+      b.onclick = function () {
+        ROTV.sec = b.dataset.sec;
+        paintRotation(host);
+        window.scrollTo(0, 0);
+        var sec = MAP && MAP.sectors.filter(function (s) { return s.id === ROTV.sec; })[0];
+        if (sec) queueSyms(sec.stocks || []);
+      };
+    });
+    var back = $('shn-rot-back');
+    if (back) back.onclick = function () { ROTV.sec = null; paintRotation(host); window.scrollTo(0, 0); };
+    host.querySelectorAll('[data-rank]').forEach(function (b) {
+      b.onclick = function () { lj('shn_rot_rank', b.dataset.rank); paintRotation(host); };
+    });
+    host.querySelectorAll('.srow[data-sym]').forEach(function (el) {
+      el.onclick = function () { openDetail(el.dataset.mkt, el.dataset.sym); };
+    });
+  }
+  function paintSector(host, tf) {
+    var sec = MAP.sectors.filter(function (s) { return s.id === ROTV.sec; })[0];
+    if (!sec) { ROTV.sec = null; paintRotation(host); return; }
+    var view = sectorView(sec, 'D');
+    var rank = lj('shn_rot_rank') === 'sector' ? 'sector' : 'nifty';
+    var benchFy = MAP.benchmark.fyers;
+    var rows = (sec.stocks || []).map(function (sym) {
+      var fy = fyOfNse(sym);
+      var bars = barsOf(fy);
+      var snap = snapOf(fy, 'D');
+      var info = infoOf(fy, 'D', 'NSE');
+      var fit = info && window.SHNSignals ? SHNSignals.fit(info, scan()) : null;
+      return {
+        sym: sym, fy: fy, bars: bars, snap: snap, fit: fit,
+        vsN: rsPoint(fy, benchFy),
+        vsS: rsPoint(fy, sec.fyers),
+        loading: !bars && !!auth() && due(fy, 'D')
+      };
+    });
+    rows.sort(function (a, b) {
+      var av = rank === 'sector' ? (a.vsS && a.vsS.x) : (a.vsN && a.vsN.x);
+      var bv = rank === 'sector' ? (b.vsS && b.vsS.x) : (b.vsN && b.vsN.x);
+      if (av == null && bv == null) return a.sym.localeCompare(b.sym);
+      if (av == null) return 1;
+      if (bv == null) return -1;
+      return bv - av;
+    });
+    var list = rows.map(function (r) {
+      var chips = '';
+      if (!r.bars) chips = '<div class="meta">' + (r.loading ? 'loading' : '–') + '</div>';
+      else if (r.fit) {
+        chips = '<div class="chips">' + sigChip('UT', r.fit.chips.ut) + sigChip('SHN', r.fit.chips.shn) + sigChip('ITL', r.fit.chips.ith) + sigChip('DC20', r.fit.chips.dc20) + sigChip('DC40', r.fit.chips.dc40) + '</div>';
+      } else chips = '<div class="meta">–</div>';
+      var state = r.snap ? '<span class="shnst shn-' + r.snap.code + '">' + esc(shortLab(r.snap)) + '</span>' : '';
+      return '<article class="srow" data-sym="' + esc(r.sym) + '" data-mkt="NSE"><div class="top"><div><b>' + esc(r.sym) + '</b> ' + state + '</div></div><div class="meta"><span>RS Nifty ' + fmtRS(r.vsN && r.vsN.x) + '</span><span>RS sector ' + fmtRS(r.vsS && r.vsS.x) + '</span><span>Mom ' + fmtRS(r.vsN && r.vsN.y) + '</span></div>' + chips + '</article>';
+    }).join('');
+    var prog = ROTV.eqLeft > 0 ? '<div class="shnmeta">Loading stocks · ' + (ROTV.eqJobs - ROTV.eqLeft) + ' of ' + ROTV.eqJobs + '</div>' : '';
+    host.innerHTML = rotHead('rot') +
+      '<div class="shnshhd" data-rotsec="' + esc(sec.id) + '"><button type="button" class="btn" id="shn-rot-back">←</button><b>' + esc(sec.name) + '</b> ' + quadHTML(view.q) + '</div>' +
+      '<div class="shnmeta">RS ' + fmtRS(view.x) + ' · Mom ' + fmtRS(view.y) + ' · ' + fmtDays(view.days) + ' in quadrant · ' + (tf === 'W' ? 'Weekly chart' : 'Daily') + '</div>' +
+      prog +
+      '<div class="shnchips"><button type="button" class="shnchip' + (rank === 'nifty' ? ' on' : '') + '" data-rank="nifty">Rank vs Nifty</button><button type="button" class="shnchip' + (rank === 'sector' ? ' on' : '') + '" data-rank="sector">Rank vs sector</button></div>' +
+      '<div id="shn-rot-stocks">' + list + '</div>' +
+      '<div class="shnmeta">Relative strength is the same RS-Ratio, stock ÷ Nifty 50 and stock ÷ this sector. A dash is a missing closed-bar history, not a zero.</div></div>';
+    bindRotation(host);
+  }
+  function paintRotation(host) {
+    if (!MAP) {
+      var msg = MAPERR ? 'Sector map did not load.' : 'Loading the sector map.';
+      host.innerHTML = rotHead('rot') + '<div class="shnempty">' + esc(msg) + (MAPERR ? ' <button type="button" class="btn" id="shn-mapretry">Retry</button>' : '') + '</div></div>';
+      bindRotation(host);
+      var retry = $('shn-mapretry');
+      if (retry) retry.onclick = function () { MAPERR = ''; loadMap.p = null; paintRotation.wait = false; paintScreener(); };
+      if (!MAPERR && !paintRotation.wait) {
+        paintRotation.wait = true;
+        loadMap().then(function () { paintRotation.wait = false; paintScreener(); }, function () { paintRotation.wait = false; paintScreener(); });
+      }
+      return;
+    }
+    var tf = lj('shn_rot_tf') === 'W' ? 'W' : 'D';
+    if (ROTV.sec) { paintSector(host, tf); return; }
+    var tailN = rotTail();
+    var rows = MAP.sectors.map(function (sec) { return sectorView(sec, tf); });
+    sortSectors(rows);
+    var any = rows.some(function (r) { return r.src; });
+    var sorts = [['quad', 'Quadrant'], ['x', 'RS-Ratio'], ['y', 'RS-Mom'], ['w', '1W'], ['m', '1M'], ['days', 'Days']];
+    var cur = rotSort();
+    var prog = ROTV.left > 0 ? '<div class="shnmeta">Loading closed daily bars · ' + (ROTV.jobs - ROTV.left) + ' of ' + ROTV.jobs + '</div>' : '';
+    var src = '';
+    if (any) {
+      var barsN = rows.filter(function (r) { return r.src === 'bars'; }).length;
+      var lapN = rows.filter(function (r) { return r.src === 'laptop'; }).length;
+      if (barsN && !lapN) src = 'Closed daily bars on this phone. Cached so the next open does not refetch them today.';
+      else if (lapN && !barsN) src = 'Laptop scan. A row is replaced when this phone has the candles.';
+      else if (barsN && lapN) src = 'Candles on this phone where they exist. The other rows are the laptop scan.';
+    }
+    var empty = '';
+    if (!any) {
+      empty = auth()
+        ? 'Closed daily bars are not on this phone yet.'
+        : 'Log in on the Live feed tab to load NSE sector history. This list stays blank until those bars arrive.';
+    }
+    var list = rows.map(function (r) {
+      return '<button type="button" class="srow" data-sec="' + esc(r.id) + '"><div class="top"><b>' + esc(r.name) + '</b>' + quadHTML(r.q) + '</div><div class="meta"><span>RS ' + fmtRS(r.x) + '</span><span>Mom ' + fmtRS(r.y) + '</span><span>1W ' + pctHTML(r.chg1w) + '</span><span>1M ' + pctHTML(r.chg1m) + '</span><span>' + fmtDays(r.days) + '</span></div></button>';
+    }).join('');
+    host.innerHTML = rotHead('rot') +
+      '<div class="shnchips"><button type="button" class="shnchip' + (tf === 'D' ? ' on' : '') + '" data-rtf="D">Daily</button><button type="button" class="shnchip' + (tf === 'W' ? ' on' : '') + '" data-rtf="W">Weekly</button>' +
+      '<button type="button" class="shnchip' + (tailN === 5 ? ' on' : '') + '" data-tail="5">Tail 5</button><button type="button" class="shnchip' + (tailN === 6 ? ' on' : '') + '" data-tail="6">Tail 6</button><button type="button" class="shnchip' + (tailN === 8 ? ' on' : '') + '" data-tail="8">Tail 8</button></div>' +
+      '<div class="rotnote">Vs Nifty 50. RS-Ratio = 100 × EMA10(RS) / EMA26(RS). RS-Mom = 100 × RS-Ratio / EMA6. Weekly uses the last closed day of each week. Days is the daily streak in that quadrant.</div>' +
+      prog + rrgSVG(rows) +
+      '<div class="shnchips" id="shn-rot-sort">' + sorts.map(function (s) { return '<button type="button" class="shnchip' + (cur.k === s[0] ? ' on' : '') + '" data-rsort="' + s[0] + '">' + s[1] + '</button>'; }).join('') + '</div>' +
+      '<h2 class="ck-h2" id="shn-rot-list">Sectors</h2>' +
+      list +
+      (empty ? '<div class="shnempty">' + esc(empty) + '</div>' : '') +
+      (src ? '<div class="rotnote">' + esc(src) + '</div>' : '') +
+      '</div>';
+    bindRotation(host);
+  }
+
   function adoptPacks() {
     if (!window.CK || !CK.pack) return;
     Object.keys(CK.pack).forEach(function (id) {
@@ -452,6 +957,7 @@
       '.sg{display:inline-flex;align-items:center;gap:3px;border-radius:999px;padding:1px 6px;font-size:10.5px;font-weight:700;border:1px solid var(--grid);color:var(--muted)}',
       '.sg.b{color:#3fb950;border-color:#1f6f3a;background:#0d1f14}.sg.s{color:#f85149;border-color:#7f1d1d;background:#2a1214}.sg.empty{opacity:.7}',
       '.srow{background:#121820;border:1px solid var(--grid);border-radius:12px;padding:8px 10px;margin:0 0 8px;cursor:pointer}',
+      'button.srow{width:100%;text-align:left;color:inherit;font:inherit}',
       '.srow .top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}',
       '.srow .chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}',
       '.srow .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;font-size:11px;color:var(--muted)}',
@@ -463,6 +969,13 @@
       '.spill.opt{border-color:#9a6b12;color:#e3b341}',
       '.snew{background:#3b2f0b;border:1px solid #6b4f12;border-radius:10px;padding:8px 10px;margin:8px 0;font-size:12.5px;line-height:1.4}',
       '.spreset{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--grid)}',
+      '.spreset.on{background:#0e1c33;border:1px solid #1f3b66;border-radius:10px;padding:8px}',
+      '.rrgbox{background:#0d1117;border:1px solid var(--grid);border-radius:12px;overflow:hidden;margin:6px 0}',
+      '.rrgbox svg{display:block;width:100%;height:auto}',
+      '.qtag{font-weight:800;font-size:11px;color:var(--muted)}',
+      '.qtag.Leading{color:#3fb950}.qtag.Weakening{color:#e3b341}.qtag.Lagging{color:#f85149}.qtag.Improving{color:#58a6ff}',
+      '.rotnote{font-size:11px;color:var(--muted);line-height:1.35;margin:4px 0;white-space:normal}',
+      '.sscan .shnmeta{white-space:normal;line-height:1.35}',
       '.sdet{position:fixed;left:0;right:0;top:0;bottom:0;z-index:90;background:#0d1117;overflow:auto;padding:8px 10px calc(16px + env(safe-area-inset-bottom))}',
       '.sgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:8px 0}',
       '.sgrid div{background:#161b22;border:1px solid var(--grid);border-radius:10px;padding:6px}',
@@ -674,10 +1187,21 @@
         dir:'sell', within:5, ithWithin:25, optNeed:0, volOn:false, volMult:1.5, stopMax:null, momMin:null, hideUtWeak:false },
       { id:'weak', name:'Weakening watch', alert:false, tf:'2h', mode:'state', states:[2,4], utWeakOnly:true,
         signals:{ ut:'off', shn:'off', ith:'off', dc20:'off', dc40:'off' },
-        dir:'both', within:5, ithWithin:25, optNeed:0, volOn:false, volMult:1.5, stopMax:null, momMin:null, hideUtWeak:false }
+        dir:'both', within:5, ithWithin:25, optNeed:0, volOn:false, volMult:1.5, stopMax:null, momMin:null, hideUtWeak:false },
+      { id:'leaders', name:'Leaders: leading sector + Core Buy', alert:false, tf:'D', mode:'signal', leadersOnly:true,
+        signals:{ ut:'must', shn:'must', ith:'must', dc20:'opt', dc40:'opt' },
+        dir:'buy', within:5, ithWithin:25, optNeed:0, volOn:false, volMult:1.5, stopMax:null, momMin:null, hideUtWeak:false }
     ];
   }
-  function presets() { var s = lj('shn_presets'); return (s && s.length) ? s : defaultPresets(); }
+  function presets() {
+    var defs = defaultPresets();
+    var saved = lj('shn_presets');
+    if (!saved || !saved.length) return defs;
+    defs.forEach(function (d) {
+      if (!saved.some(function (p) { return p.id === d.id; })) saved.push(JSON.parse(JSON.stringify(d)));
+    });
+    return saved;
+  }
   function savePresets(list) { lj('shn_presets', list); }
   function scan() {
     if (!scan._c) { var s = lj('shn_scan'); scan._c = s && s.signals ? s : coreScan(); }
@@ -685,7 +1209,12 @@
   }
   function saveScan() { lj('shn_scan', scan()); }
   function sectorOf(sym) {
-    try { var s = (typeof DATA !== 'undefined' && DATA.series && DATA.series[sym]) || null; return (s && s.sector) || ''; } catch (e) { return ''; }
+    try {
+      var s = (typeof DATA !== 'undefined' && DATA.series && DATA.series[sym]) || null;
+      if (s && s.sector) return s.sector;
+    } catch (e) {}
+    if (MAP && MAP.chips && MAP.chips[sym]) return MAP.chips[sym];
+    return '';
   }
   function groupOf(sym) { return MCX_GROUP[sym] || ''; }
   function infoOf(fy, tf, market) {
@@ -718,6 +1247,15 @@
         return groupOf(x.sym) === g;
       });
     }
+    if (u === 'nse' && cfg.leadersOnly) {
+      var have = {};
+      list.forEach(function (x) { have[x.sym] = 1; });
+      leaderSyms().forEach(function (sym) {
+        if (have[sym]) return;
+        have[sym] = 1;
+        list.push({ market:'NSE', sym:sym, fy:fyOfNse(sym), name:sym, sub:'NSE · ' + TFN[tf] });
+      });
+    }
     if (u === 'nse' && sec !== 'all') list = list.filter(function (x) { return sectorOf(x.sym) === sec; });
     return { list:list, tf:tf };
   }
@@ -738,6 +1276,7 @@
     if (cfg.stopMax != null && dist != null && dist > cfg.stopMax + 1e-9) fit.pass = false;
     if (cfg.momMin != null && fit.mom != null && fit.mom < cfg.momMin) fit.pass = false;
     if (cfg.volOn && !(fit.volX != null && fit.volX >= (cfg.volMult || 1.5))) fit.pass = false;
+    if (cfg.leadersOnly && !symbolLeads(x.sym)) fit.pass = false;
     return { id:x.market + '|' + x.sym, sym:x.sym, fy:x.fy, name:x.name, sub:x.sub, market:x.market, tf:tf, snap:snap, fit:fit, dist:dist };
   }
   function scanRows(u) {
@@ -771,7 +1310,13 @@
       });
     }
     if (rows.length) { seen[seenKey] = syms; lj('shn_seen', seen); }
-    return { rows:rows, scanned:have, universe:uni.list.length, tf:uni.tf, freshIn:freshIn };
+    var waiting = 0;
+    if (cfg.leadersOnly) {
+      uni.list.forEach(function (x) {
+        if (!snapOf(x.fy, uni.tf) && !infoOf(x.fy, uni.tf, x.market)) waiting++;
+      });
+    }
+    return { rows:rows, scanned:have, universe:uni.list.length, tf:uni.tf, freshIn:freshIn, waiting:waiting };
   }
   function sigChip(label, hit) {
     if (!hit) return '<span class="sg empty">' + esc(label) + ' –</span>';
@@ -783,7 +1328,13 @@
     return '<span class="mom ' + cls + '">MOM ' + Math.round(v) + '</span>';
   }
   function scanBlurb(cfg) {
-    if (cfg.mode === 'state') return 'state = LONG WEAK / SHORT WEAK · UT weak · ' + (TFN[cfg.tf] || cfg.tf);
+    var lead = '';
+    if (cfg.leadersOnly) {
+      var names = [];
+      try { names = leadingNames(); } catch (e) {}
+      lead = 'Leading sector on the daily rotation' + (names.length ? ' (' + names.join(', ') + ')' : '') + ' · ';
+    }
+    if (cfg.mode === 'state') return lead + 'state = LONG WEAK / SHORT WEAK · UT weak · ' + (TFN[cfg.tf] || cfg.tf);
     var bits = [];
     [['ut','UT'],['shn','SHN'],['ith','ITH/ITL'],['dc20','DC20'],['dc40','DC40']].forEach(function (p) {
       var m = cfg.signals[p[0]]; if (!m || m === 'off') return;
@@ -791,7 +1342,7 @@
     });
     var dir = cfg.dir === 'sell' ? 'Sell' : cfg.dir === 'both' ? 'Buy and sell' : 'Buy';
     var ith = cfg.signals && cfg.signals.ith && cfg.signals.ith !== 'off' ? ' (ITH/ITL: ' + cfg.ithWithin + ' bars after the pivot is confirmed)' : '';
-    return dir + ' · every mandatory signal within the last ' + cfg.within + ' bars' + ith + ' · ' + (TFN[cfg.tf] || cfg.tf);
+    return lead + dir + ' · every mandatory signal within the last ' + cfg.within + ' bars' + ith + ' · ' + (TFN[cfg.tf] || cfg.tf);
   }
   function paintBadge(n) {
     var b = $('shn-badge'); if (!b) return;
@@ -802,8 +1353,18 @@
     var host = $('tab-shn'); if (!host) return;
     var u = UNIV === 'mcx' ? 'mcx' : 'nse';
     var cfg = scan();
+    if (u === 'nse' && (lj('shn_nse_view') || 'scan') === 'rot') {
+      var y = window.scrollY;
+      var keep = !!(ROTV.sec ? host.querySelector('[data-rotsec]') : host.querySelector('.rrgbox'));
+      paintBadge(scanRows(u).rows.length);
+      paintRotation(host);
+      queueIndices();
+      if (keep) window.scrollTo(0, y);
+      return;
+    }
     var pack = scanRows(u);
     paintBadge(pack.rows.length);
+    if (u === 'nse' && cfg.leadersOnly) queueLeaders();
     var sorts = [['fresh','Freshness'],['mom','Momentum'],['opt','Optional met'],['stop','Stop dist']];
     var curSort = lj('shn_sort') || 'fresh';
     var groups = u === 'mcx'
@@ -825,30 +1386,45 @@
       var stop = r.dist == null ? (r.snap && r.snap.stop == null ? '<span>flat</span>' : '') : '<span>stop ' + r.dist.toFixed(1) + '%</span>';
       var fr = f.fresh == null ? '' : '<span style="color:#3fb950">fresh ' + f.fresh + (f.fresh === 1 ? ' bar' : ' bars') + '</span>';
       return '<article class="srow" data-sym="' + esc(r.sym) + '" data-mkt="' + r.market + '"><div class="top"><div><b>' + esc(r.name) + '</b> <span class="shnsub" style="display:inline">' + esc(r.sub) + '</span> ' + (r.snap ? '<span class="shnst shn-' + r.snap.code + '">' + esc(shortLab(r.snap)) + '</span>' : '') + '</div>' + momHTML(f.mom) + '</div><div class="chips">' + chips + '</div><div class="meta"><span>' + f.optMet + ' of ' + f.optN + ' optional met</span>' + stop + vol + fr + '</div></article>';
-    }).join('') : '<div class="shnempty">No closed-bar matches for this scan. Chips stay empty until the bars are on the phone.</div>';
+    }).join('') : '<div class="shnempty">' + (function () {
+      if (!cfg.leadersOnly) return 'No closed-bar matches for this scan. Chips stay empty until the bars are on the phone.';
+      if (!MAP && !MAPERR) return 'Sector map is still loading.';
+      if (MAPERR) return 'Sector map did not load.';
+      if (!leadingNames().length) return 'No sector is in Leading on the last closed daily bar.';
+      if (pack.waiting && ROTV.eqLeft > 0) return 'Leading sectors are in. Stock bars are still loading.';
+      if (pack.waiting) return 'Leading sectors are in. Those stocks have no closed bars on this phone.';
+      return 'No name in a Leading sector passes Core Buy on closed bars.';
+    })() + '</div>';
     var banner = pack.freshIn.length ? '<div class="snew">New in scan · ' + esc(pack.freshIn.join(', ')) + ' entered “' + esc(cfg.name) + '”. Phone notification only, never an order.</div>' : '';
     var presetHTML = presets().map(function (p) {
       var on = p.alert ? ' checked' : '';
       var line = p.mode === 'state' ? 'state = LONG WEAK / SHORT WEAK · UT weak' : scanBlurb(p);
-      return '<div class="spreset"><div><b>' + esc(p.name) + '</b><div class="shnsub">' + esc(line) + '</div></div><button type="button" class="btn" data-use="' + esc(p.id) + '">Use</button><label class="ck-sw" title="Alert when a new symbol enters"><input type="checkbox" data-al="' + esc(p.id) + '"' + on + '><i></i></label></div>';
+      var active = scan().id === p.id ? ' on' : '';
+      return '<div class="spreset' + active + '" data-preset="' + esc(p.id) + '"><div><b>' + esc(p.name) + '</b><div class="shnsub">' + esc(line) + '</div></div><button type="button" class="btn" data-use="' + esc(p.id) + '">Use</button><label class="ck-sw" title="Alert when a new symbol enters"><input type="checkbox" data-al="' + esc(p.id) + '"' + on + '><i></i></label></div>';
     }).join('');
+    var waitNote = '';
+    if (cfg.leadersOnly && pack.waiting && pack.rows.length) {
+      waitNote = '<div class="rotnote">' + pack.waiting + (ROTV.eqLeft > 0 ? ' names in leading sectors are still loading.' : ' names in leading sectors have no closed bars on this phone.') + '</div>';
+    }
     host.innerHTML = '<div class="panel" style="margin-top:0"><div class="shnmk"><button type="button" data-u="nse"' + (u === 'nse' ? ' class="on"' : '') + '>NSE stocks</button><button type="button" data-u="mcx"' + (u === 'mcx' ? ' class="on"' : '') + '>MCX instruments</button></div>' +
+      (u === 'nse' ? viewToggle('scan') : '') +
       '<div class="shnchips" id="shn-grp">' + groups.map(function (g) { return '<button type="button" class="shnchip' + (gNow === g[0] ? ' on' : '') + '" data-g="' + esc(g[0]) + '">' + esc(g[1]) + '</button>'; }).join('') + '</div>' +
       '<div class="sscan"><div class="hd"><b>⚡ ' + esc(cfg.name) + '</b><button type="button" class="btn" id="shn-edit">Edit scan</button></div><div class="shnmeta" style="margin-top:4px">' + esc(scanBlurb(cfg)) + '</div><div class="spills">' + pills + '</div></div>' +
       '<div class="shnchips" id="shn-sort">' + sorts.map(function (s) { return '<button type="button" class="shnchip' + (curSort === s[0] ? ' on' : '') + '" data-sort="' + s[0] + '">' + s[1] + '</button>'; }).join('') + '</div>' +
       '<div class="shnstat"><div><b>' + pack.rows.length + '</b><small>match</small></div><div><b>' + pack.scanned + '</b><small>' + (pack.universe > pack.scanned ? 'of ' + pack.universe : 'scanned') + '</small></div><div><b>' + esc(TFN[pack.tf] || pack.tf) + '</b><small>timeframe</small></div><div><b>' + (pack.freshIn.length ? '+' + pack.freshIn.length : '0') + '</b><small>new</small></div></div>' +
-      banner + rows +
+      banner + waitNote + rows +
       '<div class="shnmeta" style="margin-top:8px">Chip = signal · B / S · bars ago (0 = last closed bar). ● = mandatory. Tap a row for the timeline.</div>' +
       '<h2 class="ck-h2">Saved scan presets</h2>' + presetHTML + '</div>';
     bindScreener(host);
   }
   function bindScreener(host) {
-    host.querySelectorAll('.shnmk button').forEach(function (b) { b.onclick = function () { UNIV = b.dataset.u; lj('shn_univ', UNIV); paintScreener(); if (UNIV === 'nse') ensureNse(); else queueMcx(scan().tf); }; });
+    host.querySelectorAll('.shnmk button[data-u]').forEach(function (b) { b.onclick = function () { UNIV = b.dataset.u; lj('shn_univ', UNIV); paintScreener(); if (UNIV === 'nse') ensureNse(); else queueMcx(scan().tf); }; });
+    host.querySelectorAll('[data-v]').forEach(function (b) { b.onclick = function () { lj('shn_nse_view', b.dataset.v); ROTV.sec = null; paintScreener(); window.scrollTo(0, 0); }; });
     host.querySelectorAll('#shn-grp .shnchip').forEach(function (b) { b.onclick = function () { if (UNIV === 'mcx') lj('shn_group', b.dataset.g); else lj('shn_sector', b.dataset.g); paintScreener(); }; });
     host.querySelectorAll('#shn-sort .shnchip').forEach(function (b) { b.onclick = function () { lj('shn_sort', b.dataset.sort); paintScreener(); }; });
     var ed = $('shn-edit'); if (ed) ed.onclick = function () { openScan(); };
     host.querySelectorAll('.srow').forEach(function (el) { el.onclick = function () { openDetail(el.dataset.mkt, el.dataset.sym); }; });
-    host.querySelectorAll('[data-use]').forEach(function (b) { b.onclick = function () { var p = presets().filter(function (x) { return x.id === b.dataset.use; })[0]; if (!p) return; scan._c = JSON.parse(JSON.stringify(p)); saveScan(); paintScreener(); }; });
+    host.querySelectorAll('[data-use]').forEach(function (b) { b.onclick = function () { var p = presets().filter(function (x) { return x.id === b.dataset.use; })[0]; if (!p) return; if (p.leadersOnly) { UNIV = 'nse'; lj('shn_univ', 'nse'); lj('shn_nse_view', 'scan'); } scan._c = JSON.parse(JSON.stringify(p)); saveScan(); paintScreener(); window.scrollTo(0, 0); }; });
     host.querySelectorAll('[data-al]').forEach(function (box) { box.onchange = function (e) { e.stopPropagation(); var list = presets(); list.forEach(function (p) { if (p.id === box.dataset.al) p.alert = box.checked; }); savePresets(list); if (scan().id === box.dataset.al) { scan().alert = box.checked; saveScan(); } }; });
   }
   function openRow(market, sym) {
@@ -916,7 +1492,7 @@
     var el = document.createElement('div');
     el.id = 'shn-scan'; el.className = 'shnsheet';
     el.innerHTML = '<div class="shnshhd"><b>Build your scan</b><button type="button" class="btn x" id="shn-sx">Close</button></div>' +
-      '<div class="shnmeta">SIGNALS · tap Mandatory / Optional / Off</div>' + rows +
+      '<div class="shnmeta">SIGNALS · tap Mandatory / Optional / Off</div>' + (cfg.leadersOnly ? '<div class="shnmeta">This preset also requires the stock’s sector to be Leading on the daily rotation.</div>' : '') + rows +
       '<div class="shnslbl"><span>DIRECTION</span><span>SIGNAL WITHIN LAST N BARS</span></div><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><span class="seg" id="shn-dir"><button type="button" data-dir="buy"' + (cfg.dir==='buy'?' class="on"':'') + '>Buy</button><button type="button" data-dir="sell"' + (cfg.dir==='sell'?' class="on"':'') + '>Sell</button><button type="button" data-dir="both"' + (cfg.dir==='both'?' class="on"':'') + '>Both</button></span><span class="step"><button type="button" id="shn-n-m">−</button><b id="shn-nn">' + cfg.within + '</b><button type="button" id="shn-n-p">+</button></span></div>' +
       '<div class="shnslbl"><span>OPTIONAL · NEED AT LEAST</span><span>TIMEFRAME</span></div><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><span class="step"><button type="button" id="shn-k-m">−</button><b id="shn-kk">' + cfg.optNeed + '</b><button type="button" id="shn-k-p">+</button></span><span class="seg" id="shn-stf">' + TFS.map(function (t) { return '<button type="button" data-tf="' + t + '"' + (normTf(cfg.tf)===t?' class="on"':'') + '>' + TFN[t] + '</button>'; }).join('') + '</span></div>' +
       '<div class="shnchips" id="shn-ex"><button type="button" class="shnchip' + (cfg.volOn?' on':'') + '" data-ex="vol">Volume ≥ ' + cfg.volMult + '× avg</button><button type="button" class="shnchip' + (cfg.stopMax!=null?' on':'') + '" data-ex="stop">Stop ≤ 4%</button><button type="button" class="shnchip' + (cfg.momMin!=null?' on':'') + '" data-ex="mom">MOM ≥ 75</button><button type="button" class="shnchip' + (cfg.hideUtWeak?' on':'') + '" data-ex="utw">Hide UT weak</button></div>' +
@@ -971,7 +1547,10 @@
   css();
   var savedTf = lj('shn_tf'); if (savedTf && TF[savedTf]) HUB_TF = savedTf;
   var savedU = lj('shn_univ'); if (savedU === 'mcx' || savedU === 'nse') UNIV = savedU;
-  try { loadStore(); } catch (e) { console.warn('shn cache', e); }
+  try { loadStore(); loadRotCache(); } catch (e) { console.warn('shn cache', e); }
+  loadMap().then(function () {
+    if ($('tab-shn') && $('tab-shn').classList.contains('active')) paintScreener();
+  }).catch(function () {});
 
   if (typeof fxHubPaint === 'function') {
     var _hub = fxHubPaint;
@@ -1017,7 +1596,8 @@
   }
   window.RENDER = window.RENDER || {};
   RENDER.shn = function () { paintScreener(); ensureNse(); queueMcx(scan().tf || HUB_TF); };
-  if ((location.hash || '') === '#shn' && typeof showTab === 'function') showTab('shn');
+  var openShn = (location.hash || '') === '#shn' || (typeof startTab !== 'undefined' && startTab === 'shn');
+  if (openShn && typeof showTab === 'function') showTab('shn');
 
   function boot() {
     if (started) return; started = true;
