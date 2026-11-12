@@ -1300,6 +1300,10 @@ function shnMatrixV34Factory(lib) {
           if (lastFlip >= 0) { V.flipAge[i] = i - lastFlip; V.flipTime[i] = t[lastFlip] }
         }
         V.entryAge = pos !== 0 && tEntBar !== null ? (L - tEntBar) : null
+        V.flipBuy = buyF
+        V.flipSell = sellF
+        V.momLong = momL
+        V.momShort = momS
       }
       return V
     },

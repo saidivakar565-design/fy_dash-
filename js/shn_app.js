@@ -449,6 +449,27 @@
       '.shnpanel .note{padding:0 10px 8px;color:#8b96a8;font-size:11px;line-height:1.35}',
       '.shnwl{width:100%;box-sizing:border-box;min-height:64px;margin-top:6px}',
       '.shnempty{padding:16px 8px;text-align:center;color:var(--muted);line-height:1.45}',
+      '.sg{display:inline-flex;align-items:center;gap:3px;border-radius:999px;padding:1px 6px;font-size:10.5px;font-weight:700;border:1px solid var(--grid);color:var(--muted)}',
+      '.sg.b{color:#3fb950;border-color:#1f6f3a;background:#0d1f14}.sg.s{color:#f85149;border-color:#7f1d1d;background:#2a1214}.sg.empty{opacity:.7}',
+      '.srow{background:#121820;border:1px solid var(--grid);border-radius:12px;padding:8px 10px;margin:0 0 8px;cursor:pointer}',
+      '.srow .top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}',
+      '.srow .chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}',
+      '.srow .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;font-size:11px;color:var(--muted)}',
+      '.srow .mom{font-weight:800;font-size:12px}.srow .mom.hi{color:#3fb950}.srow .mom.mid{color:#e3b341}',
+      '.sscan{background:#0e1c33;border:1px solid #1f3b66;border-radius:12px;padding:8px 10px;margin:8px 0}',
+      '.sscan .hd{display:flex;justify-content:space-between;align-items:center;gap:8px}',
+      '.spills{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}',
+      '.spill{border-radius:999px;padding:2px 8px;font-size:11px;border:1px solid #1f6feb;color:#9ecbff}',
+      '.spill.opt{border-color:#9a6b12;color:#e3b341}',
+      '.snew{background:#3b2f0b;border:1px solid #6b4f12;border-radius:10px;padding:8px 10px;margin:8px 0;font-size:12.5px;line-height:1.4}',
+      '.spreset{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--grid)}',
+      '.sdet{position:fixed;left:0;right:0;top:0;bottom:0;z-index:90;background:#0d1117;overflow:auto;padding:8px 10px calc(16px + env(safe-area-inset-bottom))}',
+      '.sgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:8px 0}',
+      '.sgrid div{background:#161b22;border:1px solid var(--grid);border-radius:10px;padding:6px}',
+      '.sgrid small{display:block;color:var(--muted);font-size:10px}.sgrid b{font-size:16px}',
+      '.ssig td{font-size:12px;padding:6px 4px}',
+      '.step{display:inline-flex;align-items:center;gap:6px}',
+      '.step button{min-width:32px}',
       '@media (max-width:420px){.shnstat{grid-template-columns:repeat(4,minmax(0,1fr))}.shnstat b{font-size:14px}}'
     ].join('');
     document.head.appendChild(s);
@@ -635,41 +656,142 @@
     if (foot) foot.parentNode.insertBefore(d, foot);
   }
 
-  function rowsFor(univ) {
-    var f = filt();
-    var tf = univ === 'nse' ? normTf(f.tfNse || 'D') : normTf(f.tfMcx || HUB_TF);
-    var list = univ === 'nse' ? wl().map(function (sym) { return { market: 'NSE', sym: sym, fy: fyOfNse(sym), name: sym, sub: 'NSE · ' + TFN[tf] }; }) : mcxList().map(function (x) { return { market: 'MCX', sym: x.sym, fy: x.fy, name: x.name, sub: 'MCX · ' + TFN[tf] }; });
-    if (univ === 'nse' && lap.json) {
-      var extra = (lap.json.symbols || lap.json.rows || []).filter(function (r) { return r && String(r.market || 'NSE').toUpperCase() === 'NSE' && r.state >= 1; });
-      if (extra.length) {
-        list = extra.map(function (r) {
-          var fy = r.fyers || fyOfNse(r.symbol);
-          var rtf = normTf(r.tf || r.timeframe || tf);
-          return { market: 'NSE', sym: r.symbol, fy: fy, name: r.name || r.symbol, sub: 'NSE · ' + (TFN[rtf] || rtf), tf: rtf };
-        });
+  var SIGC = Object.create(null);
+  var MCX_GROUP = { GOLD:'bullion', GOLDM:'bullion', GOLDTEN:'bullion', SILVER:'bullion', SILVERM:'bullion', SILVERMIC:'bullion', COPPER:'metal', ZINC:'metal', ZINCMINI:'metal', ALUMINI:'metal', ALUMINIUM:'metal', LEAD:'metal', NICKEL:'metal', WTI:'energy', CRUDEOIL:'energy', CRUDEOILM:'energy', NATGAS:'energy', NATURALGAS:'energy', NATGASMINI:'energy' };
+  function coreScan() {
+    return { id:'core', name:'SHN Core Buy', alert:true, tf:'D', mode:'signal', utWeakOnly:false,
+      signals:{ ut:'must', shn:'must', ith:'must', dc20:'opt', dc40:'opt' },
+      dir:'buy', within:5, ithWithin:25, optNeed:0, volOn:false, volMult:1.5, stopMax:null, momMin:null, hideUtWeak:false };
+  }
+  function defaultPresets() {
+    return [
+      coreScan(),
+      { id:'brk', name:'Breakout + volume', alert:true, tf:'2h', mode:'signal', utWeakOnly:false,
+        signals:{ ut:'off', shn:'must', ith:'off', dc20:'must', dc40:'opt' },
+        dir:'buy', within:3, ithWithin:25, optNeed:0, volOn:true, volMult:1.5, stopMax:null, momMin:null, hideUtWeak:false },
+      { id:'short', name:'Short side core', alert:false, tf:'2h', mode:'signal', utWeakOnly:false,
+        signals:{ ut:'must', shn:'must', ith:'must', dc20:'opt', dc40:'off' },
+        dir:'sell', within:5, ithWithin:25, optNeed:0, volOn:false, volMult:1.5, stopMax:null, momMin:null, hideUtWeak:false },
+      { id:'weak', name:'Weakening watch', alert:false, tf:'2h', mode:'state', states:[2,4], utWeakOnly:true,
+        signals:{ ut:'off', shn:'off', ith:'off', dc20:'off', dc40:'off' },
+        dir:'both', within:5, ithWithin:25, optNeed:0, volOn:false, volMult:1.5, stopMax:null, momMin:null, hideUtWeak:false }
+    ];
+  }
+  function presets() { var s = lj('shn_presets'); return (s && s.length) ? s : defaultPresets(); }
+  function savePresets(list) { lj('shn_presets', list); }
+  function scan() {
+    if (!scan._c) { var s = lj('shn_scan'); scan._c = s && s.signals ? s : coreScan(); }
+    return scan._c;
+  }
+  function saveScan() { lj('shn_scan', scan()); }
+  function sectorOf(sym) {
+    try { var s = (typeof DATA !== 'undefined' && DATA.series && DATA.series[sym]) || null; return (s && s.sector) || ''; } catch (e) { return ''; }
+  }
+  function groupOf(sym) { return MCX_GROUP[sym] || ''; }
+  function infoOf(fy, tf, market) {
+    if (!window.SHNSignals) return null;
+    var hit = MEM[fy + '|' + tf];
+    if (!hit || !hit.bars || hit.bars.length < 40) return null;
+    var last = hit.bars[hit.bars.length - 1];
+    var key = fy + '|' + tf + '|' + hit.bars.length + '|' + last[0] + '|' + last[4];
+    if (SIGC[key]) return SIGC[key];
+    try { SIGC[key] = SHNSignals.analyse(hit.bars, market); } catch (e) { SIGC[key] = null; }
+    return SIGC[key];
+  }
+  function universe(u) {
+    var cfg = scan();
+    var tf = normTf(cfg.tf || (u === 'nse' ? 'D' : HUB_TF));
+    var list = u === 'nse'
+      ? wl().map(function (sym) { return { market:'NSE', sym:sym, fy:fyOfNse(sym), name:sym, sub:'NSE · ' + TFN[tf] }; })
+      : mcxList().map(function (x) { return { market:'MCX', sym:x.sym, fy:x.fy, name:x.name, sub:'MCX · ' + TFN[tf] }; });
+    if (u === 'nse' && lap.json) {
+      var extra = (lap.json.symbols || lap.json.rows || []).filter(function (r) { return r && String(r.market || 'NSE').toUpperCase() === 'NSE'; });
+      if (extra.length && !list.some(function (x) { return snapOf(x.fy, tf) || infoOf(x.fy, tf, 'NSE'); })) {
+        list = extra.map(function (r) { var fy = r.fyers || fyOfNse(r.symbol); return { market:'NSE', sym:r.symbol, fy:fy, name:r.name || r.symbol, sub:'NSE · ' + TFN[tf] }; });
       }
     }
-    list = list.filter(function (x) { return !x.tf || normTf(x.tf) === tf; });
-    var out = [], have = 0;
-    list.forEach(function (x) {
-      var rowTf = x.tf || tf;
-      var snap = snapOf(x.fy, rowTf);
-      if (!snap) return;
+    var g = lj('shn_group') || 'all';
+    var sec = lj('shn_sector') || 'all';
+    if (u === 'mcx' && g !== 'all') {
+      list = list.filter(function (x) {
+        if (g === 'fav') return typeof fxIsFav === 'function' && fxIsFav('M:' + x.sym);
+        return groupOf(x.sym) === g;
+      });
+    }
+    if (u === 'nse' && sec !== 'all') list = list.filter(function (x) { return sectorOf(x.sym) === sec; });
+    return { list:list, tf:tf };
+  }
+  function rowFit(x, tf, cfg) {
+    var snap = snapOf(x.fy, tf);
+    var info = infoOf(x.fy, tf, x.market);
+    if (!snap && !info) return null;
+    var fit = info && window.SHNSignals ? SHNSignals.fit(info, cfg) : null;
+    if (cfg.mode === 'state') {
+      var ok = snap && (cfg.states || []).indexOf(snap.code) >= 0 && (!cfg.utWeakOnly || snap.utWeak);
+      fit = fit || { pass:false, chips:{}, optMet:0, optN:0, fresh:snap && snap.barsSinceFlip, mom:0, volX:null };
+      fit.pass = !!ok;
+      if (snap) fit.fresh = snap.barsSinceFlip;
+    }
+    if (!fit) return null;
+    if (cfg.hideUtWeak && snap && snap.utWeak) fit.pass = false;
+    var dist = snap ? distOf(snap, x.sym) : null;
+    if (cfg.stopMax != null && dist != null && dist > cfg.stopMax + 1e-9) fit.pass = false;
+    if (cfg.momMin != null && fit.mom != null && fit.mom < cfg.momMin) fit.pass = false;
+    if (cfg.volOn && !(fit.volX != null && fit.volX >= (cfg.volMult || 1.5))) fit.pass = false;
+    return { id:x.market + '|' + x.sym, sym:x.sym, fy:x.fy, name:x.name, sub:x.sub, market:x.market, tf:tf, snap:snap, fit:fit, dist:dist };
+  }
+  function scanRows(u) {
+    var cfg = scan();
+    var uni = universe(u || (UNIV === 'mcx' ? 'mcx' : 'nse'));
+    var rows = [], have = 0;
+    uni.list.forEach(function (x) {
+      var row = rowFit(x, uni.tf, cfg);
+      if (!row) return;
       have++;
-      if (f.states && f.states[snap.code] === 0) return;
-      if (snap.barsSinceFlip != null && snap.barsSinceFlip > f.barsMax) return;
-      var d = snap.stopDistPct != null && livePx(x.sym) == null ? snap.stopDistPct : distOf(snap, x.sym);
-      if (d != null && d > f.stopMax + 1e-6) return;
-      if (f.ut === 'agree' && snap.utText !== 'agree') return;
-      if (f.ut === 'weak' && !snap.utWeak) return;
-      out.push({ id: x.market + '|' + x.sym, sym: x.sym, fy: x.fy, name: x.name, sub: x.sub, market: x.market, tf: rowTf, snap: snap, dist: d });
+      if (row.fit.pass) rows.push(row);
     });
-    out.sort(function (a, b) {
-      var d = a.snap.code - b.snap.code;
-      if (d) return d;
-      return (a.snap.barsSinceFlip == null ? 99 : a.snap.barsSinceFlip) - (b.snap.barsSinceFlip == null ? 99 : b.snap.barsSinceFlip);
+    var sort = lj('shn_sort') || 'fresh';
+    rows.sort(function (a, b) {
+      if (sort === 'mom') return (b.fit.mom || 0) - (a.fit.mom || 0);
+      if (sort === 'opt') return b.fit.optMet - a.fit.optMet || (a.fit.fresh == null ? 99 : a.fit.fresh) - (b.fit.fresh == null ? 99 : b.fit.fresh);
+      if (sort === 'stop') return (a.dist == null ? 99 : a.dist) - (b.dist == null ? 99 : b.dist);
+      return (a.fit.fresh == null ? 99 : a.fit.fresh) - (b.fit.fresh == null ? 99 : b.fit.fresh);
     });
-    return { rows: out, scanned: have, universe: list.length, tf: tf };
+    var seen = lj('shn_seen') || {};
+    var seenKey = (cfg.id || 'core') + '|' + (u || 'nse') + '|' + uni.tf;
+    var prev = seen[seenKey];
+    var syms = rows.map(function (r) { return r.sym; });
+    var freshIn = prev ? syms.filter(function (s) { return prev.indexOf(s) < 0; }) : [];
+    if (prev && cfg.alert) {
+      freshIn.forEach(function (sym) {
+        var key = 'scan|' + seenKey + '|' + sym + '|' + (rows.filter(function (r) { return r.sym === sym; })[0].fit.time || '');
+        var title = sym + ' entered ' + cfg.name;
+        var body = TFN[uni.tf] + ' · ' + cfg.name + ' · notification only';
+        if (typeof window.SHNAlert === 'function') { try { window.SHNAlert({ key:key, sym:sym, rule:'scan-enter', title:title, body:body }); } catch (e) {} }
+      });
+    }
+    if (rows.length) { seen[seenKey] = syms; lj('shn_seen', seen); }
+    return { rows:rows, scanned:have, universe:uni.list.length, tf:uni.tf, freshIn:freshIn };
+  }
+  function sigChip(label, hit) {
+    if (!hit) return '<span class="sg empty">' + esc(label) + ' –</span>';
+    return '<span class="sg ' + (hit.dir === 'S' ? 's' : 'b') + '">' + esc(label) + ' ' + hit.dir + ' ' + hit.ago + '</span>';
+  }
+  function momHTML(v) {
+    if (v == null || !isFinite(v)) return '';
+    var cls = v >= 75 ? 'hi' : v >= 50 ? 'mid' : '';
+    return '<span class="mom ' + cls + '">MOM ' + Math.round(v) + '</span>';
+  }
+  function scanBlurb(cfg) {
+    if (cfg.mode === 'state') return 'state = LONG WEAK / SHORT WEAK · UT weak · ' + (TFN[cfg.tf] || cfg.tf);
+    var bits = [];
+    [['ut','UT'],['shn','SHN'],['ith','ITH/ITL'],['dc20','DC20'],['dc40','DC40']].forEach(function (p) {
+      var m = cfg.signals[p[0]]; if (!m || m === 'off') return;
+      bits.push(p[1] + (m === 'must' ? ' must' : ' optional'));
+    });
+    var dir = cfg.dir === 'sell' ? 'Sell' : cfg.dir === 'both' ? 'Buy and sell' : 'Buy';
+    var ith = cfg.signals && cfg.signals.ith && cfg.signals.ith !== 'off' ? ' (ITH/ITL: ' + cfg.ithWithin + ' bars after the pivot is confirmed)' : '';
+    return dir + ' · every mandatory signal within the last ' + cfg.within + ' bars' + ith + ' · ' + (TFN[cfg.tf] || cfg.tf);
   }
   function paintBadge(n) {
     var b = $('shn-badge'); if (!b) return;
@@ -678,118 +800,158 @@
   }
   function paintScreener() {
     var host = $('tab-shn'); if (!host) return;
-    var f = filt();
     var u = UNIV === 'mcx' ? 'mcx' : 'nse';
-    var pack = rowsFor(u);
+    var cfg = scan();
+    var pack = scanRows(u);
     paintBadge(pack.rows.length);
-    var states = u === 'mcx'
-      ? [[1, 'Strong long'], [2, 'Long weakening'], [3, 'Strong short'], [4, 'Short weakening'], [5, 'Wait for buy'], [6, 'Wait for sell'], [7, 'Mixed']]
-      : [[1, 'Strong long'], [2, 'Long weakening'], [3, 'Strong short'], [4, 'Short weakening'], [5, 'Wait for buy'], [6, 'No long'], [7, 'Mixed']];
-    var tf = pack.tf;
-    var chips = states.map(function (s) {
-      return '<button type="button" class="shnchip' + (f.states[s[0]] ? ' on' : '') + '" data-st="' + s[0] + '">' + s[1] + '</button>';
+    var sorts = [['fresh','Freshness'],['mom','Momentum'],['opt','Optional met'],['stop','Stop dist']];
+    var curSort = lj('shn_sort') || 'fresh';
+    var groups = u === 'mcx'
+      ? [['all','All'],['bullion','Bullion'],['metal','Base metals'],['energy','Energy'],['fav','Favourites']]
+      : [['all','All']].concat((function () {
+          var set = {};
+          wl().forEach(function (sym) { var s = sectorOf(sym); if (s) set[s] = 1; });
+          return Object.keys(set).sort().map(function (s) { return [s, s]; });
+        })());
+    var gNow = u === 'mcx' ? (lj('shn_group') || 'all') : (lj('shn_sector') || 'all');
+    var pills = [['ut','UT'],['shn','SHN'],['ith','ITH/ITL'],['dc20','DC20'],['dc40','DC40']].map(function (p) {
+      var m = cfg.signals[p[0]]; if (!m || m === 'off') return '';
+      return '<span class="spill' + (m === 'opt' ? ' opt' : '') + '">' + (m === 'must' ? '● ' : '○ ') + p[1] + (m === 'must' ? ' must' : ' optional') + '</span>';
     }).join('');
-    var srcMap = {};
-    pack.rows.forEach(function (r) { var h = MEM[r.fy + '|' + r.tf]; if (h && h.src) srcMap[h.src] = 1; });
-    var src = srcMap.fyers ? 'Fyers closed bars' : srcMap.laptop ? 'Laptop scan' : (srcMap.saved || srcMap.pack) ? 'Saved candles' : (lap.ok === false ? 'Laptop offline' : 'Waiting for bars');
-    var when = lap.scan || (pack.rows.length ? istStamp(Date.now()) : '–');
-    var table = pack.rows.length ? '<table class="shntable"><thead><tr><th>Symbol</th><th>Trade state</th><th>Bars</th><th>Stop dist</th><th>UT</th><th></th></tr></thead><tbody>' +
-      pack.rows.map(function (r) {
-        var ut = r.snap.utWeak ? '<span class="shut wk">weak</span>' : r.snap.utText === 'agree' ? '<span class="shut ok">✓</span>' : '<span class="shut na">–</span>';
-        var on = bellOn(r.id, r.tf);
-        return '<tr class="shnrow" data-sym="' + esc(r.sym) + '" data-mkt="' + r.market + '"><td><b>' + esc(r.name) + '</b><span class="shnsub">' + esc(r.sub) + '</span></td>' +
-          '<td><span class="shnst shn-' + r.snap.code + '">' + esc(shortLab(r.snap)) + '</span></td><td>' + (r.snap.barsSinceFlip == null ? '–' : r.snap.barsSinceFlip) + '</td>' +
-          '<td>' + (r.dist == null ? (r.snap.stop == null ? 'flat' : '–') : (r.snap.stop == null ? 'flat' : r.dist.toFixed(1) + '%')) + '</td><td>' + ut + '</td>' +
-          '<td><button type="button" class="ck-bell shnbell' + (on ? ' on' : '') + '" data-id="' + esc(r.id) + '" data-tf="' + r.tf + '" aria-label="Alert on state change"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M12 3a5 5 0 0 0-5 5v2.6c0 .8-.3 1.6-.8 2.2L5 15.2h14l-1.2-2.4c-.5-.6-.8-1.4-.8-2.2V8a5 5 0 0 0-5-5z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M10 17.2a2 2 0 0 0 4 0" fill="none" stroke="currentColor" stroke-width="1.7"/></svg></button></td></tr>';
-      }).join('') + '</tbody></table>' : '<div class="shnempty">' + (auth() || lap.ok ? 'No symbols match these filters yet. Closed bars only — nothing here is an example.' : 'Log in on Live feed to scan the watchlist from Fyers, or open this tab while the laptop Market Radar is reachable.') + '</div>';
-    var wlBox = u === 'nse' ? '<details class="rt-cfg"><summary>NSE watchlist · up to 30 · Daily from Fyers when the laptop is offline</summary><textarea class="shnwl" id="shn-wl" spellcheck="false">' + esc(wl().join(' ')) + '</textarea><div class="shnmeta">One symbol per space. Saved on this phone. The scan uses your Fyers login and does not place orders.</div><button type="button" class="btn" id="shn-wl-save">Save &amp; scan</button></details>' : '';
+    var rows = pack.rows.length ? pack.rows.map(function (r) {
+      var f = r.fit;
+      var chips = sigChip('UT', f.chips.ut) + sigChip('SHN', f.chips.shn) + sigChip('ITL', f.chips.ith) + sigChip('DC20', f.chips.dc20) + sigChip('DC40', f.chips.dc40);
+      var vol = f.volX == null ? '' : '<span>vol ' + f.volX.toFixed(1) + '×</span>';
+      var stop = r.dist == null ? (r.snap && r.snap.stop == null ? '<span>flat</span>' : '') : '<span>stop ' + r.dist.toFixed(1) + '%</span>';
+      var fr = f.fresh == null ? '' : '<span style="color:#3fb950">fresh ' + f.fresh + (f.fresh === 1 ? ' bar' : ' bars') + '</span>';
+      return '<article class="srow" data-sym="' + esc(r.sym) + '" data-mkt="' + r.market + '"><div class="top"><div><b>' + esc(r.name) + '</b> <span class="shnsub" style="display:inline">' + esc(r.sub) + '</span> ' + (r.snap ? '<span class="shnst shn-' + r.snap.code + '">' + esc(shortLab(r.snap)) + '</span>' : '') + '</div>' + momHTML(f.mom) + '</div><div class="chips">' + chips + '</div><div class="meta"><span>' + f.optMet + ' of ' + f.optN + ' optional met</span>' + stop + vol + fr + '</div></article>';
+    }).join('') : '<div class="shnempty">No closed-bar matches for this scan. Chips stay empty until the bars are on the phone.</div>';
+    var banner = pack.freshIn.length ? '<div class="snew">New in scan · ' + esc(pack.freshIn.join(', ')) + ' entered “' + esc(cfg.name) + '”. Phone notification only, never an order.</div>' : '';
+    var presetHTML = presets().map(function (p) {
+      var on = p.alert ? ' checked' : '';
+      var line = p.mode === 'state' ? 'state = LONG WEAK / SHORT WEAK · UT weak' : scanBlurb(p);
+      return '<div class="spreset"><div><b>' + esc(p.name) + '</b><div class="shnsub">' + esc(line) + '</div></div><button type="button" class="btn" data-use="' + esc(p.id) + '">Use</button><label class="ck-sw" title="Alert when a new symbol enters"><input type="checkbox" data-al="' + esc(p.id) + '"' + on + '><i></i></label></div>';
+    }).join('');
     host.innerHTML = '<div class="panel" style="margin-top:0"><div class="shnmk"><button type="button" data-u="nse"' + (u === 'nse' ? ' class="on"' : '') + '>NSE stocks</button><button type="button" data-u="mcx"' + (u === 'mcx' ? ' class="on"' : '') + '>MCX instruments</button></div>' +
-      '<div class="shnchips" id="shn-states">' + chips + '</div>' +
-      '<div class="shnslbl"><span>Bars since V4a flip</span><b>0 – ' + (f.barsMax >= 20 ? '20+' : f.barsMax) + '</b></div><input class="shnrange" id="shn-bars" type="range" min="0" max="20" value="' + f.barsMax + '">' +
-      '<div class="shnslbl"><span>Stop distance · ≤ % of price</span><b>' + (f.stopMax >= 10 ? '10%+' : f.stopMax + '%') + '</b></div><input class="shnrange" id="shn-stop" type="range" min="0" max="10" step="0.5" value="' + f.stopMax + '">' +
-      '<div class="shnchips" id="shn-ut"><button type="button" class="shnchip' + (f.ut === 'any' ? ' on' : '') + '" data-ut="any">UT any</button><button type="button" class="shnchip' + (f.ut === 'agree' ? ' on' : '') + '" data-ut="agree">Agrees</button><button type="button" class="shnchip' + (f.ut === 'weak' ? ' on' : '') + '" data-ut="weak">UT weak only</button><button type="button" class="btn" id="shn-filter">Filter</button></div>' +
-      '<div class="shnstat"><div><b>' + pack.rows.length + '</b><small>match</small></div><div><b>' + pack.scanned + '</b><small>' + (pack.universe > pack.scanned ? 'of ' + pack.universe : 'scanned') + '</small></div><div><b>' + esc(TFN[tf] || tf) + '</b><small>timeframe</small></div><div><b style="font-size:12px">' + esc(when) + '</b><small>' + esc(src) + '</small></div></div>' +
-      table + wlBox +
-      '<p class="shnmeta">Sorted strong long first, then fewest bars since the V4a flip. Tap a row for the chart and the trade-state panel. Read-only.</p></div>';
-    bindScreener(host, pack);
+      '<div class="shnchips" id="shn-grp">' + groups.map(function (g) { return '<button type="button" class="shnchip' + (gNow === g[0] ? ' on' : '') + '" data-g="' + esc(g[0]) + '">' + esc(g[1]) + '</button>'; }).join('') + '</div>' +
+      '<div class="sscan"><div class="hd"><b>⚡ ' + esc(cfg.name) + '</b><button type="button" class="btn" id="shn-edit">Edit scan</button></div><div class="shnmeta" style="margin-top:4px">' + esc(scanBlurb(cfg)) + '</div><div class="spills">' + pills + '</div></div>' +
+      '<div class="shnchips" id="shn-sort">' + sorts.map(function (s) { return '<button type="button" class="shnchip' + (curSort === s[0] ? ' on' : '') + '" data-sort="' + s[0] + '">' + s[1] + '</button>'; }).join('') + '</div>' +
+      '<div class="shnstat"><div><b>' + pack.rows.length + '</b><small>match</small></div><div><b>' + pack.scanned + '</b><small>' + (pack.universe > pack.scanned ? 'of ' + pack.universe : 'scanned') + '</small></div><div><b>' + esc(TFN[pack.tf] || pack.tf) + '</b><small>timeframe</small></div><div><b>' + (pack.freshIn.length ? '+' + pack.freshIn.length : '0') + '</b><small>new</small></div></div>' +
+      banner + rows +
+      '<div class="shnmeta" style="margin-top:8px">Chip = signal · B / S · bars ago (0 = last closed bar). ● = mandatory. Tap a row for the timeline.</div>' +
+      '<h2 class="ck-h2">Saved scan presets</h2>' + presetHTML + '</div>';
+    bindScreener(host);
   }
-  function bindScreener(host, pack) {
-    host.querySelectorAll('.shnmk button').forEach(function (b) {
-      b.onclick = function () { UNIV = b.dataset.u; lj('shn_univ', UNIV); paintScreener(); if (UNIV === 'nse') ensureNse(); else queueMcx(filt().tfMcx); };
-    });
-    host.querySelectorAll('#shn-states .shnchip').forEach(function (b) {
-      b.onclick = function () { var k = +b.dataset.st; filt().states[k] = filt().states[k] ? 0 : 1; saveFilt(); paintScreener(); };
-    });
-    var bars = $('shn-bars'), stop = $('shn-stop');
-    if (bars) { bars.oninput = function () { filt().barsMax = +bars.value; var b = bars.previousElementSibling && bars.previousElementSibling.querySelector('b'); if (b) b.textContent = '0 – ' + (bars.value >= 20 ? '20+' : bars.value); }; bars.onchange = function () { saveFilt(); paintScreener(); }; }
-    if (stop) { stop.oninput = function () { filt().stopMax = +stop.value; var b = stop.previousElementSibling && stop.previousElementSibling.querySelector('b'); if (b) b.textContent = stop.value >= 10 ? '10%+' : stop.value + '%'; }; stop.onchange = function () { saveFilt(); paintScreener(); }; }
-    host.querySelectorAll('#shn-ut .shnchip').forEach(function (b) {
-      b.onclick = function () { filt().ut = b.dataset.ut; saveFilt(); paintScreener(); };
-    });
-    var fb = $('shn-filter'); if (fb) fb.onclick = function () { openFilter(pack); };
-    host.querySelectorAll('.shnrow').forEach(function (tr) {
-      tr.onclick = function (e) {
-        if (e.target.closest('.shnbell')) return;
-        openRow(tr.dataset.mkt, tr.dataset.sym);
-      };
-    });
-    host.querySelectorAll('.shnbell').forEach(function (b) {
-      b.onclick = function (e) { e.stopPropagation(); toggleBell(b.dataset.id, b.dataset.tf); paintScreener(); };
-    });
-    var save = $('shn-wl-save');
-    if (save) save.onclick = function () { saveWl($('shn-wl').value); scanNse(); };
+  function bindScreener(host) {
+    host.querySelectorAll('.shnmk button').forEach(function (b) { b.onclick = function () { UNIV = b.dataset.u; lj('shn_univ', UNIV); paintScreener(); if (UNIV === 'nse') ensureNse(); else queueMcx(scan().tf); }; });
+    host.querySelectorAll('#shn-grp .shnchip').forEach(function (b) { b.onclick = function () { if (UNIV === 'mcx') lj('shn_group', b.dataset.g); else lj('shn_sector', b.dataset.g); paintScreener(); }; });
+    host.querySelectorAll('#shn-sort .shnchip').forEach(function (b) { b.onclick = function () { lj('shn_sort', b.dataset.sort); paintScreener(); }; });
+    var ed = $('shn-edit'); if (ed) ed.onclick = function () { openScan(); };
+    host.querySelectorAll('.srow').forEach(function (el) { el.onclick = function () { openDetail(el.dataset.mkt, el.dataset.sym); }; });
+    host.querySelectorAll('[data-use]').forEach(function (b) { b.onclick = function () { var p = presets().filter(function (x) { return x.id === b.dataset.use; })[0]; if (!p) return; scan._c = JSON.parse(JSON.stringify(p)); saveScan(); paintScreener(); }; });
+    host.querySelectorAll('[data-al]').forEach(function (box) { box.onchange = function (e) { e.stopPropagation(); var list = presets(); list.forEach(function (p) { if (p.id === box.dataset.al) p.alert = box.checked; }); savePresets(list); if (scan().id === box.dataset.al) { scan().alert = box.checked; saveScan(); } }; });
   }
   function openRow(market, sym) {
     if (market === 'MCX' && typeof fxOpen === 'function' && typeof fxRow === 'function' && fxRow('M:' + sym)) { fxOpen('M:' + sym); return; }
     if (window.DC20Chart) {
-      var tf = market === 'NSE' ? (filt().tfNse || 'D') : (filt().tfMcx || '2h');
-      DC20Chart.open({ market: market, sym: sym, tf: normTf(tf) === '4h' ? '4h' : normTf(tf) === '2h' ? '2h' : normTf(tf) === '15m' ? '15m' : 'D', rule: 'CHART', rule_text: 'SHN v3.4 screener', dir: 'none', bar_time: '', entry: null, invalidation: null, upper: null, mid: null, lower: null, atr: null, price: null, dist_atr: null, inv_rule: '-', key: market + '|' + sym + '|shn' });
+      var tf = normTf(scan().tf || 'D');
+      var code = tf === '4h' ? '4h' : tf === '2h' ? '2h' : tf === '15m' ? '15m' : 'D';
+      DC20Chart.open({ market:market, sym:sym, tf:code, rule:'CHART', rule_text:'SHN v3.4 screener', dir:'none', bar_time:'', entry:null, invalidation:null, upper:null, mid:null, lower:null, atr:null, price:null, dist_atr:null, inv_rule:'-', key:market + '|' + sym + '|shn' });
     }
   }
-  function openFilter(pack) {
-    var old = $('shn-fsheet'); if (old) old.remove();
-    var f = filt();
+  function spark(bars, marks) {
+    var c = bars.map(function (b) { return Array.isArray(b) ? +b[4] : +b.close; }).slice(-80);
+    if (c.length < 2) return '';
+    var lo = Math.min.apply(null, c), hi = Math.max.apply(null, c), w = 360, h = 140;
+    var pts = c.map(function (v, i) { return ((i / (c.length - 1)) * w).toFixed(1) + ',' + (h - ((hi > lo ? (v - lo) / (hi - lo) : 0.5) * (h - 8)) - 4).toFixed(1); }).join(' ');
+    var dots = (marks || []).map(function (m) {
+      var i = c.length - 1 - m.ago; if (i < 0) return '';
+      var x = (i / (c.length - 1)) * w, y = h - ((hi > lo ? (c[i] - lo) / (hi - lo) : 0.5) * (h - 8)) - 4;
+      return '<text x="' + x.toFixed(1) + '" y="' + Math.max(10, y - 6).toFixed(1) + '" fill="' + (m.dir === 'S' ? '#f85149' : '#3fb950') + '" font-size="9" text-anchor="middle">' + esc(m.label) + '</text>';
+    }).join('');
+    return '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" height="150" role="img"><polyline points="' + pts + '" fill="none" stroke="#f85149" stroke-width="1.6"/>' + dots + '</svg>';
+  }
+  function openDetail(market, sym) {
+    var old = $('shn-detail'); if (old) old.remove();
+    var u = market === 'NSE' ? 'nse' : 'mcx';
+    var tf = normTf(scan().tf || 'D');
+    var fy = market === 'NSE' ? fyOfNse(sym) : fyOfMcx(sym);
+    var snap = snapOf(fy, tf);
+    var info = infoOf(fy, tf, market);
+    var fit = info && window.SHNSignals ? SHNSignals.fit(info, scan()) : null;
+    var bars = (MEM[fy + '|' + tf] && MEM[fy + '|' + tf].bars) || [];
+    var marks = [];
+    if (fit) [['UT','ut'],['SHN','shn'],['ITL','ith'],['DC20','dc20']].forEach(function (p) { var h = fit.chips[p[1]]; if (h) marks.push({ ago:h.ago, dir:h.dir, label:p[0] }); });
+    var sigRows = [['UT Bot','ut'],['SHN flip (V4a)','shn'],['ITL / ITH','ith'],['DC20 breakout','dc20'],['DC40 breakout','dc40']].map(function (p) {
+      var h = fit && fit.chips[p[1]];
+      var mode = scan().signals[p[1]] || 'off';
+      return '<tr><td>' + (mode === 'must' ? '● ' : mode === 'opt' ? '○ ' : '') + esc(p[0]) + '</td><td>' + (h ? esc(h.dir === 'B' ? 'Buy' : 'Sell') : '–') + '</td><td>' + (h ? h.ago : '–') + '</td><td>' + (h && h.time ? esc(istBar(h.time)) : '–') + '</td><td>' + (h && h.inScan ? '✓' : '–') + '</td></tr>';
+    }).join('');
     var el = document.createElement('div');
-    el.id = 'shn-fsheet'; el.className = 'shnsheet';
-    var u = UNIV === 'mcx' ? 'mcx' : 'nse';
-    var tf = u === 'nse' ? (f.tfNse || 'D') : (f.tfMcx || '2h');
-    el.innerHTML = '<div class="shnshhd"><b>Filter · SHN v3.4</b><button type="button" class="btn x" id="shn-fx">Close</button></div>' +
-      '<div class="k" style="color:#8b949e;font-size:11px;margin:6px 0">TRADE STATE</div>' +
-      '<div class="shnchips">' + [1, 2, 3, 4, 5, 6, 7].map(function (c) {
-        var name = c === 6 ? (u === 'mcx' ? 'Wait for sell' : 'No long') : STATE_NAME[c];
-        return '<button type="button" class="shnchip' + (f.states[c] ? ' on' : '') + '" data-st="' + c + '">' + name + '</button>';
-      }).join('') + '</div>' +
-      '<div class="k" style="color:#8b949e;font-size:11px;margin:8px 0 4px">TIMEFRAME</div><span class="seg" id="shn-ftf">' + TFS.map(function (t) { return '<button type="button" data-tf="' + t + '"' + (normTf(tf) === t ? ' class="on"' : '') + '>' + TFN[t] + '</button>'; }).join('') + '</span>' +
-      '<div class="shnslbl"><span>Bars since flip</span><b id="shn-fb">' + f.barsMax + '</b></div><input class="shnrange" id="shn-fbars" type="range" min="0" max="20" value="' + f.barsMax + '">' +
-      '<div class="shnslbl"><span>Stop distance · ≤ %</span><b id="shn-fs">' + f.stopMax + '%</b></div><input class="shnrange" id="shn-fstop" type="range" min="0" max="10" step="0.5" value="' + f.stopMax + '">' +
-      '<div class="k" style="color:#8b949e;font-size:11px;margin:8px 0 4px">UT BOT</div><div class="shnchips" id="shn-fut"><button type="button" class="shnchip' + (f.ut === 'agree' ? ' on' : '') + '" data-ut="agree">Agrees</button><button type="button" class="shnchip' + (f.ut === 'weak' ? ' on' : '') + '" data-ut="weak">UT weak only</button><button type="button" class="shnchip' + (f.ut === 'any' ? ' on' : '') + '" data-ut="any">Any</button></div>' +
-      '<div style="display:flex;gap:8px;margin-top:10px"><button type="button" class="btn" id="shn-freset">Reset</button><button type="button" class="btn pri" id="shn-fshow">Show results</button><button type="button" class="btn" id="shn-falert">Alert on change</button></div>';
+    el.id = 'shn-detail'; el.className = 'sdet';
+    el.innerHTML = '<div class="shnshhd"><button type="button" class="btn" id="shn-dx">←</button><b>' + esc(sym) + '</b> <span class="shnsub">' + esc(market + ' · ' + (TFN[tf] || tf)) + '</span>' + (snap ? ' <span class="shnst shn-' + snap.code + '">' + esc(shortLab(snap)) + '</span>' : '') + '<span style="margin-left:auto">' + (snap && snap.close != null ? num(snap.close) : '') + '</span></div>' +
+      spark(bars, marks) +
+      '<table class="shntable ssig"><thead><tr><th>Signal</th><th>Dir</th><th>Bars ago</th><th>Bar (IST)</th><th>In scan</th></tr></thead><tbody>' + sigRows + '</tbody></table>' +
+      '<div class="sgrid"><div><small>MOMENTUM</small><b class="' + ((fit && fit.mom >= 75) ? 'up' : '') + '">' + (fit ? Math.round(fit.mom) : '–') + '</b><small>EMA13 · MACD hist · hist&gt;0 · no fresh squeeze</small></div><div><small>FRESHNESS</small><b>' + (fit && fit.fresh != null ? fit.fresh : '–') + '</b><small>bars since all mandatory signals were true</small></div><div><small>OPTIONAL</small><b>' + (fit ? fit.optMet + ' of ' + fit.optN : '–') + '</b><small>plain count, not a score</small></div></div>' +
+      '<div class="sgrid"><div><small>V4a STOP</small><b>' + (snap && snap.stop != null ? num(snap.stop) : '–') + '</b><small>' + (snap && distOf(snap, sym) != null ? distOf(snap, sym).toFixed(1) + '% away' : '') + '</small></div><div><small>VOLUME</small><b>' + (fit && fit.volX != null ? fit.volX.toFixed(1) + '×' : '–') + '</b><small>vs 20-bar average</small></div><div><small>UT vs V4a</small><b>' + (snap && snap.utWeak ? 'weak' : snap && snap.utText === 'agree' ? 'agrees' : '–') + '</b></div></div>' +
+      '<div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="btn" id="shn-dchart">Chart + SHN panel</button><button type="button" class="btn" id="shn-dbell">Alert on exit / weak</button><button type="button" class="btn" id="shn-dwatch">Watch</button></div>';
     document.body.appendChild(el);
-    $('shn-fx').onclick = function () { el.remove(); };
-    el.querySelectorAll('[data-st]').forEach(function (b) { b.onclick = function () { var k = +b.dataset.st; filt().states[k] = filt().states[k] ? 0 : 1; saveFilt(); openFilter(rowsFor(u)); }; });
-    el.querySelectorAll('#shn-ftf button').forEach(function (b) {
-      b.onclick = function () {
-        if (u === 'nse') filt().tfNse = b.dataset.tf; else { filt().tfMcx = b.dataset.tf; HUB_TF = b.dataset.tf; }
-        saveFilt(); openFilter(rowsFor(u)); queueMcx(b.dataset.tf);
-      };
-    });
-    $('shn-fbars').oninput = function () { filt().barsMax = +this.value; $('shn-fb').textContent = this.value; saveFilt(); };
-    $('shn-fstop').oninput = function () { filt().stopMax = +this.value; $('shn-fs').textContent = this.value + '%'; saveFilt(); };
-    el.querySelectorAll('#shn-fut .shnchip').forEach(function (b) { b.onclick = function () { filt().ut = b.dataset.ut; saveFilt(); openFilter(rowsFor(u)); }; });
-    $('shn-freset').onclick = function () { FILT = { states: { 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1 }, barsMax: 20, stopMax: 10, ut: 'any', tfNse: 'D', tfMcx: '2h' }; saveFilt(); openFilter(rowsFor(u)); paintScreener(); };
-    $('shn-fshow').onclick = function () { el.remove(); paintScreener(); };
-    $('shn-falert').onclick = function () {
-      var now = rowsFor(u);
-      now.rows.forEach(function (r) { var b = bells(); b[r.id + '|' + r.tf] = 1; lj('shn_bells', b); });
-      el.remove(); paintScreener();
-    };
+    $('shn-dx').onclick = function () { el.remove(); };
+    $('shn-dchart').onclick = function () { el.remove(); openRow(market, sym); };
+    $('shn-dbell').onclick = function () { toggleBell(market + '|' + sym, tf); this.textContent = bellOn(market + '|' + sym, tf) ? 'Alert on' : 'Alert on exit / weak'; };
+    $('shn-dwatch').onclick = function () { if (market === 'MCX' && typeof fxToggleFav === 'function') fxToggleFav('M:' + sym); };
+  }
+  function modeBtn(sig, mode, label) {
+    return '<button type="button" class="shnchip' + (scan().signals[sig] === mode ? ' on' : '') + '" data-sig="' + sig + '" data-mode="' + mode + '">' + label + '</button>';
+  }
+  function openScan() {
+    var old = $('shn-scan'); if (old) old.remove();
+    var cfg = scan();
+    var names = { ut:'UT Bot', shn:'SHN candle flip (V4a)', ith:'ITH / ITL', dc20:'DC 20 breakout', dc40:'DC 40 breakout' };
+    var hints = { ut:'UT Buy / UT Sell · key 1.0 · ATR 10 · close', shn:'HA colour flip, body ≥ 0.3 × ATR14', ith:'pivot 20 / 20 confirmed · ITL = buy, ITH = sell', dc20:'close crosses the prior 20-bar high / low', dc40:'close crosses the prior 40-bar high / low' };
+    var rows = ['ut','shn','ith','dc20','dc40'].map(function (k) {
+      var extra = k === 'ith' ? '<div class="shnmeta">Confirmation window <span class="step"><button type="button" id="shn-ith-m" type="button">−</button><b id="shn-ithn">' + cfg.ithWithin + '</b><button type="button" id="shn-ith-p">+</button></span> bars</div>' : '';
+      return '<div style="padding:8px 0;border-top:1px solid var(--grid)"><b>' + names[k] + '</b><div class="shnmeta">' + hints[k] + '</div><div class="shnchips">' + modeBtn(k,'must','Mandatory') + modeBtn(k,'opt','Optional') + modeBtn(k,'off','Off') + '</div>' + extra + '</div>';
+    }).join('');
+    var el = document.createElement('div');
+    el.id = 'shn-scan'; el.className = 'shnsheet';
+    el.innerHTML = '<div class="shnshhd"><b>Build your scan</b><button type="button" class="btn x" id="shn-sx">Close</button></div>' +
+      '<div class="shnmeta">SIGNALS · tap Mandatory / Optional / Off</div>' + rows +
+      '<div class="shnslbl"><span>DIRECTION</span><span>SIGNAL WITHIN LAST N BARS</span></div><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><span class="seg" id="shn-dir"><button type="button" data-dir="buy"' + (cfg.dir==='buy'?' class="on"':'') + '>Buy</button><button type="button" data-dir="sell"' + (cfg.dir==='sell'?' class="on"':'') + '>Sell</button><button type="button" data-dir="both"' + (cfg.dir==='both'?' class="on"':'') + '>Both</button></span><span class="step"><button type="button" id="shn-n-m">−</button><b id="shn-nn">' + cfg.within + '</b><button type="button" id="shn-n-p">+</button></span></div>' +
+      '<div class="shnslbl"><span>OPTIONAL · NEED AT LEAST</span><span>TIMEFRAME</span></div><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><span class="step"><button type="button" id="shn-k-m">−</button><b id="shn-kk">' + cfg.optNeed + '</b><button type="button" id="shn-k-p">+</button></span><span class="seg" id="shn-stf">' + TFS.map(function (t) { return '<button type="button" data-tf="' + t + '"' + (normTf(cfg.tf)===t?' class="on"':'') + '>' + TFN[t] + '</button>'; }).join('') + '</span></div>' +
+      '<div class="shnchips" id="shn-ex"><button type="button" class="shnchip' + (cfg.volOn?' on':'') + '" data-ex="vol">Volume ≥ ' + cfg.volMult + '× avg</button><button type="button" class="shnchip' + (cfg.stopMax!=null?' on':'') + '" data-ex="stop">Stop ≤ 4%</button><button type="button" class="shnchip' + (cfg.momMin!=null?' on':'') + '" data-ex="mom">MOM ≥ 75</button><button type="button" class="shnchip' + (cfg.hideUtWeak?' on':'') + '" data-ex="utw">Hide UT weak</button></div>' +
+      '<div style="display:flex;gap:8px;margin-top:10px"><button type="button" class="btn" id="shn-sreset">Reset</button><button type="button" class="btn" id="shn-ssave">Save preset</button><button type="button" class="btn pri" id="shn-srun">Run</button></div>';
+    document.body.appendChild(el);
+    function bump(key, d, lo, hi, lab) { cfg[key] = Math.max(lo, Math.min(hi, (cfg[key] || 0) + d)); if (lab) lab.textContent = cfg[key]; saveScan(); }
+    $('shn-sx').onclick = function () { el.remove(); paintScreener(); };
+    el.querySelectorAll('[data-sig]').forEach(function (b) { b.onclick = function () { cfg.signals[b.dataset.sig] = b.dataset.mode; saveScan(); openScan(); }; });
+    el.querySelectorAll('#shn-dir button').forEach(function (b) { b.onclick = function () { cfg.dir = b.dataset.dir; saveScan(); openScan(); }; });
+    el.querySelectorAll('#shn-stf button').forEach(function (b) { b.onclick = function () { cfg.tf = b.dataset.tf; saveScan(); openScan(); }; });
+    $('shn-n-m').onclick = function () { bump('within', -1, 1, 20, $('shn-nn')); };
+    $('shn-n-p').onclick = function () { bump('within', 1, 1, 20, $('shn-nn')); };
+    $('shn-k-m').onclick = function () { bump('optNeed', -1, 0, 5, $('shn-kk')); };
+    $('shn-k-p').onclick = function () { bump('optNeed', 1, 0, 5, $('shn-kk')); };
+    var im = $('shn-ith-m'), ip = $('shn-ith-p');
+    if (im) im.onclick = function () { bump('ithWithin', -1, 20, 60, $('shn-ithn')); };
+    if (ip) ip.onclick = function () { bump('ithWithin', 1, 20, 60, $('shn-ithn')); };
+    el.querySelectorAll('#shn-ex .shnchip').forEach(function (b) { b.onclick = function () {
+      var k = b.dataset.ex;
+      if (k === 'vol') cfg.volOn = !cfg.volOn;
+      else if (k === 'stop') cfg.stopMax = cfg.stopMax == null ? 4 : null;
+      else if (k === 'mom') cfg.momMin = cfg.momMin == null ? 75 : null;
+      else cfg.hideUtWeak = !cfg.hideUtWeak;
+      saveScan(); openScan();
+    }; });
+    $('shn-sreset').onclick = function () { scan._c = coreScan(); saveScan(); openScan(); };
+    $('shn-ssave').onclick = function () { var list = presets(); var copy = JSON.parse(JSON.stringify(cfg)); copy.id = 'custom'; copy.name = 'Custom scan'; copy.alert = false; var i = list.findIndex(function (p) { return p.id === 'custom'; }); if (i >= 0) list[i] = copy; else list.push(copy); savePresets(list); };
+    $('shn-srun').onclick = function () { el.remove(); paintScreener(); };
   }
 
   function paintAll() {
     try { decorateHub(); } catch (e) { console.warn('shn hub', e); }
     try { if ($('tab-dc20') && $('tab-dc20').classList.contains('active')) decorateDC(); } catch (e) { console.warn('shn dc', e); }
     try { paintFx(); } catch (e) {}
-    try { if ($('tab-shn') && $('tab-shn').classList.contains('active')) paintScreener(); else paintBadge(rowsFor(UNIV === 'mcx' ? 'mcx' : 'nse').rows.length); } catch (e) {}
+    try { if ($('tab-shn') && $('tab-shn').classList.contains('active')) paintScreener(); else paintBadge(scanRows(UNIV === 'mcx' ? 'mcx' : 'nse').rows.length); } catch (e) {}
   }
   function ensureNse() {
     pullLaptop().then(function (ok) {
@@ -854,7 +1016,7 @@
     CK.detailExtra = function () { var extra = ''; try { extra = _ex() || ''; } catch (e) {} var p = ''; try { p = dccPanel(); } catch (e) {} return p + extra; };
   }
   window.RENDER = window.RENDER || {};
-  RENDER.shn = function () { paintScreener(); ensureNse(); queueMcx(filt().tfMcx || HUB_TF); };
+  RENDER.shn = function () { paintScreener(); ensureNse(); queueMcx(scan().tf || HUB_TF); };
   if ((location.hash || '') === '#shn' && typeof showTab === 'function') showTab('shn');
 
   function boot() {

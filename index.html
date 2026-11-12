@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0d1117">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-O24V1F27f8pb0glCkelh3cVHLNiHAJ5gCaVtq2aNch8=' 'sha256-0TopaehSpUgjqQkoJwN//emnNlISxntXT/MQKooVYhw=' 'sha256-/WX3fHr+AjpPs0ABWSZxax50b4l+wVbWj7JMO4jrqm4=' 'sha256-2Ovy2n1ybf3P1RmYJYX+KyJvHcS94rTHPUWRDcLShuo=' 'sha256-hHNYnFebn9fC5G48TQDGpFUq+9GurzfucVWD+7cjNLE=' 'sha256-vM746bTlsQ/XDKJOG8xtfgUUXwYrkmYz8BWizeXBMJ0=' 'sha256-eeHzsCRnJ4hqdYeNxpB8mNyceSfsN674/GyykWx0x5g='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; manifest-src 'self'; worker-src 'self' blob:; connect-src 'self' https://api-t1.fyers.in https://public.fyers.in wss://socket.fyers.in ws://127.0.0.1:8765 ws://localhost:8765 ws://*:8765 wss://*:8765 wss://*.ts.net https://desktop-3565pu7.tailece833.ts.net:8443 https://desktop-3565pu7.tailece833.ts.net:* https://*.tailece833.ts.net:* https://*.ts.net:* http://127.0.0.1:* http://localhost:*; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-O24V1F27f8pb0glCkelh3cVHLNiHAJ5gCaVtq2aNch8=' 'sha256-0TopaehSpUgjqQkoJwN//emnNlISxntXT/MQKooVYhw=' 'sha256-Xd2FlWT79g4/5b2pY+n397fX7+OHuH81s17+Jja77JQ=' 'sha256-2Ovy2n1ybf3P1RmYJYX+KyJvHcS94rTHPUWRDcLShuo=' 'sha256-hHNYnFebn9fC5G48TQDGpFUq+9GurzfucVWD+7cjNLE=' 'sha256-vM746bTlsQ/XDKJOG8xtfgUUXwYrkmYz8BWizeXBMJ0=' 'sha256-eeHzsCRnJ4hqdYeNxpB8mNyceSfsN674/GyykWx0x5g='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; manifest-src 'self'; worker-src 'self' blob:; connect-src 'self' https://api-t1.fyers.in https://public.fyers.in wss://socket.fyers.in ws://127.0.0.1:8765 ws://localhost:8765 ws://*:8765 wss://*:8765 wss://*.ts.net https://desktop-3565pu7.tailece833.ts.net:8443 https://desktop-3565pu7.tailece833.ts.net:* https://*.tailece833.ts.net:* https://*.ts.net:* http://127.0.0.1:* http://localhost:*; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <link rel="icon" href="icon-192.png">
 <title>Cockpit · Fyers live</title>
@@ -169,7 +169,7 @@ body.fxopen{overflow:hidden}
 .fxsum{margin-left:auto}
 .fxinddet{margin-top:6px;font-size:12.5px}.fxinddet summary{cursor:pointer;color:var(--acc)}
 .fxind{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}.fxind .ind label{display:inline-flex;gap:4px;align-items:center;color:var(--txt)}
-#fxchart{margin-top:4px;min-height:360px}
+#fxchart{margin-top:4px;min-height:300px;flex:0 0 auto;overflow:hidden;touch-action:none}
 .fxfoot{font-size:12px;margin-top:4px;line-height:1.45}
 @media (max-width:640px){table.hm td{min-width:42px}.fxsum{margin-left:0}}
 
@@ -5308,7 +5308,8 @@ function fxBuildPanel(){ if($('fxc')) return;
   fxLayPaint();
   fxPinch($('fxchart'));
   window.addEventListener('popstate', ()=>{ if(FXV.open && !(history.state && history.state.fxc)) fxClose(); });
-  window.addEventListener('resize', ()=>{ if(FXV.open) { clearTimeout(FXV.rz); FXV.rz=setTimeout(fxDraw, 250); } });
+  window.addEventListener('resize', ()=>{ if(!FXV.open) return; const h=window.innerHeight;
+    if(FXV._winH && Math.abs(h-FXV._winH)<48) return; FXV._winH=h; clearTimeout(FXV.rz); FXV.rz=setTimeout(fxDraw, 250); });
   DataLayer.subscribe(k=>{ if(!FXV.open || FXV.open.kind!=='mcx' || (k!=null && k!==FXV.open.key)) return; if(FXV.tickT) return;
     FXV.tickT=setTimeout(()=>{ FXV.tickT=null; fxLiveBar(); fxPaintHead(); }, 2500); });
 }
@@ -5676,6 +5677,15 @@ function drInit(){ const box=$('fxdr'); if(!box) return;
   const btn=$('fxdrbtn'); if(btn) btn.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); drToggle(); if(!box.hidden) box.scrollIntoView({block:'nearest'}); });
   const show=lsGet('fx_dr'); drToggle(show==null?true:!!show); }
 
+function fxChartH(el){
+  const box=document.getElementById('fxc');
+  if(!box||!el) return 420;
+  let y=0, n=el;
+  while(n && n!==box){ y+=n.offsetTop||0; n=n.offsetParent; }
+  const view=box.clientHeight||window.innerHeight;
+  const room=view-y-8;
+  return Math.max(300, Math.min(Math.round(room), Math.round(view*0.78)));
+}
 function fxDraw(){ const r=FXV.open, b=FXV.bars, el=$('fxchart'); if(!r||!b||!el) return; FXV.feedTop=0; const I=fxInd(), n=b.c.length, x=b.lab||b.x, m=isMobile();
   const T=[], shapes=[], ann=[], panes=[]; const ov=(y,name,color,o={})=>T.push(Object.assign({type:'scatter', mode:'lines', x, y, name, line:{color, width:o.w||1.2, dash:o.dash||'solid'}, hoverinfo:'skip', yaxis:'y', showlegend:o.leg!==false, legendgroup:o.g}, o.extra||{}));
   T.push({type:'candlestick', x, open:b.o, high:b.h, low:b.l, close:b.c, name:r.label, increasing:{line:{color:'#26a69a',width:1}, fillcolor:'#26a69a'}, decreasing:{line:{color:'#ef5350',width:1}, fillcolor:'#ef5350'}, showlegend:false, yaxis:'y'});
@@ -5715,7 +5725,7 @@ function fxDraw(){ const r=FXV.open, b=FXV.bars, el=$('fxchart'); if(!r||!b||!el
       T.push({type:'bar', x, y:hs, name:'MACD hist', marker:{color:hs.map(v=>v>=0?'rgba(63,185,80,.6)':'rgba(248,81,73,.6)')}, yaxis:ya, showlegend:false, hoverinfo:'skip'});
       T.push({type:'scatter', mode:'lines', x, y:mc, name:'MACD', line:{color:'#58a6ff', width:1.1}, yaxis:ya, showlegend:false}); T.push({type:'scatter', mode:'lines', x, y:sg, name:'Signal', line:{color:'#f85149', width:1.1}, yaxis:ya, showlegend:false}); }
     if(p==='atr') T.push({type:'scatter', mode:'lines', x, y:atr(b, I.atr.n), name:`ATR ${I.atr.n}`, line:{color:'#ff9e64', width:1.2}, yaxis:ya, showlegend:false}); });
-  const H=Math.max((FXV.feedMarks&&FXV.feedMarks.length)?320:360, window.innerHeight - (el.getBoundingClientRect().top||150) - ((FXV.feedMarks&&FXV.feedMarks.length)?112:64)), subH=sub.length? (m?0.16:0.15):0, gap=0.025, pb=sub.length*(subH+gap);
+  const H=fxChartH(el), subH=sub.length? (m?0.16:0.15):0, gap=0.025, pb=sub.length*(subH+gap);
   const v=FXV.view||fxDefView(n), yr=fxYRange(b, v);
   const L=baseLayout({height:H, showlegend:true, hovermode:'x', dragmode:'pan', margin:{l:m?6:10, r:m?50:60, t:(m?34:28)+(FXV.feedTop||0), b:28}, bargap:0, shapes, annotations:ann,
     legend:{orientation:'h', y:1.0, yanchor:'bottom', x:0, font:{size:m?9:10.5}, bgcolor:'rgba(0,0,0,0)'}});
@@ -8301,6 +8311,7 @@ boot();
 })();
 </script>
 <script src="js/shn_v34.js"></script>
+<script src="js/shn_signals.js"></script>
 <script src="js/shn_app.js"></script>
 </body>
 </html>
