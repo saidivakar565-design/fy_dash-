@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0d1117">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-O24V1F27f8pb0glCkelh3cVHLNiHAJ5gCaVtq2aNch8=' 'sha256-0TopaehSpUgjqQkoJwN//emnNlISxntXT/MQKooVYhw=' 'sha256-Gds3YPkdbe1NjtwDemwwxgv53nhuiCdhzqy7qcGdj+M=' 'sha256-2Ovy2n1ybf3P1RmYJYX+KyJvHcS94rTHPUWRDcLShuo=' 'sha256-hHNYnFebn9fC5G48TQDGpFUq+9GurzfucVWD+7cjNLE=' 'sha256-vM746bTlsQ/XDKJOG8xtfgUUXwYrkmYz8BWizeXBMJ0=' 'sha256-3igVrlUY62xOX6eRdTIkwBF9N61fp2Gq+9QwMEIO5BU='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; manifest-src 'self'; worker-src 'self' blob:; connect-src 'self' https://api-t1.fyers.in https://public.fyers.in wss://socket.fyers.in ws://127.0.0.1:8765 ws://localhost:8765 ws://*:8765 wss://*:8765 wss://*.ts.net https://desktop-3565pu7.tailece833.ts.net:8443 https://desktop-3565pu7.tailece833.ts.net:* https://*.tailece833.ts.net:* https://*.ts.net:* http://127.0.0.1:* http://localhost:*; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-O24V1F27f8pb0glCkelh3cVHLNiHAJ5gCaVtq2aNch8=' 'sha256-0TopaehSpUgjqQkoJwN//emnNlISxntXT/MQKooVYhw=' 'sha256-/WX3fHr+AjpPs0ABWSZxax50b4l+wVbWj7JMO4jrqm4=' 'sha256-2Ovy2n1ybf3P1RmYJYX+KyJvHcS94rTHPUWRDcLShuo=' 'sha256-hHNYnFebn9fC5G48TQDGpFUq+9GurzfucVWD+7cjNLE=' 'sha256-vM746bTlsQ/XDKJOG8xtfgUUXwYrkmYz8BWizeXBMJ0=' 'sha256-eeHzsCRnJ4hqdYeNxpB8mNyceSfsN674/GyykWx0x5g='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; manifest-src 'self'; worker-src 'self' blob:; connect-src 'self' https://api-t1.fyers.in https://public.fyers.in wss://socket.fyers.in ws://127.0.0.1:8765 ws://localhost:8765 ws://*:8765 wss://*:8765 wss://*.ts.net https://desktop-3565pu7.tailece833.ts.net:8443 https://desktop-3565pu7.tailece833.ts.net:* https://*.tailece833.ts.net:* https://*.ts.net:* http://127.0.0.1:* http://localhost:*; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <link rel="icon" href="icon-192.png">
 <title>Cockpit · Fyers live</title>
@@ -3933,6 +3933,7 @@ Index::`,"LONG","NotOk","STK_PRC","connect","blob","HSM_LOG_Flag","wasClean","se
   <button data-tab="radar">Radar</button>
   <button data-tab="dc20">DC20 + SHN</button>
   <button data-tab="alerts">Alerts</button>
+  <button data-tab="shn">Screener<span class="shnbadge" id="shn-badge" hidden></span></button>
   <button data-tab="heat">Heat map</button>
   <button data-tab="calendar">Calendar</button>
   <button data-tab="macro">Macro</button>
@@ -4185,6 +4186,7 @@ Index::`,"LONG","NotOk","STK_PRC","connect","blob","HSM_LOG_Flag","wasClean","se
 <section class="tab" id="tab-radar"><div id="rt-radar"></div></section>
 <section class="tab" id="tab-dc20"><div id="rt-dc"></div></section>
 <section class="tab" id="tab-alerts"><div id="ck-alerts"></div></section>
+<section class="tab" id="tab-shn"></section>
 </main>
 <footer id="footer"></footer>
 <script>
@@ -6063,7 +6065,7 @@ function fxHubGlobe(keys, favs){ const el=$('fxhubglobe');
       return `<button type="button" class="fxgn${n.fav?' fav':''} ${cls(p)}" data-id="M:${esc(n.k)}" style="left:${n.x.toFixed(2)}%;top:${n.y.toFixed(2)}%;--tint:${fxPerfCol(p,3)}" title="${esc(mt.label||n.k)} — open chart"><span class="fxgni">
         <i class="fxgdot">${n.fav?'★':''}</i><b>${esc(fxHubShort(n.k))}</b><span class="fxgv ${cls(p)}">${p!=null?fmtP(p,2):q?'₹'+fxHubPx(q.ltp):'·'}</span></span></button>`; }).join('')}
     </div><button type="button" class="fxgcore" id="fxgcore" title="Show the MCX table"><b>MCX</b><span>${keys.length} futures</span></button></div>
-   <div class="fxgbar"><span class="sub">Tap a node to open its chart · ★ favourites on the inner ring</span><button class="btn" type="button" id="fxgspin">${spin?'⏸ Spin':'▶ Spin'}</button></div>`; }
+   <div class="fxgbar"><span class="sub">Tap a node for its trade state · ★ favourites on the inner ring</span><button class="btn" type="button" id="fxgspin">${spin?'⏸ Spin':'▶ Spin'}</button></div>`; }
 /* ---------- wiring ---------- */
 (()=>{ fxBuildPanel(); fxPaintFavBar();
   const t=$('mcxtbl'); if(t) t.addEventListener('click', e=>{ if(e.target.closest('button,a,input')) return; const tr=e.target.closest('tr'); const c=tr&&tr.querySelector('[data-fxk]'); if(c) fxOpen('M:'+c.dataset.fxk); });
@@ -7872,7 +7874,7 @@ function heatCells(){
 function bell(mk, sym, on){
   return '<button type="button" class="ck-bell'+(on?" on":"")+'" data-mk="'+esc(mk)+'" data-sym="'+esc(sym)+'" aria-label="Alert rules for '+esc(sym)+'"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 3a5 5 0 0 0-5 5v2.6c0 .8-.3 1.6-.8 2.2L5 15.2h14l-1.2-2.4c-.5-.6-.8-1.4-.8-2.2V8a5 5 0 0 0-5-5z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M10 17.2a2 2 0 0 0 4 0" fill="none" stroke="currentColor" stroke-width="1.7"/></svg></button>';
 }
-function rulesOn(id){var r=inst(id); var n=0; if(r.shnFlip.on) n++; if(r.shnStop.on) n++; if(r.dc20.on) n++; if(r.cross.on) n++; if(r.move.on) n++; return n;}
+function rulesOn(id){var r=inst(id); var n=0; if(r.shnState&&r.shnState.on) n++; if(r.shnFlip.on) n++; if(r.shnStop.on) n++; if(r.dc20.on) n++; if(r.cross.on) n++; if(r.move.on) n++; return n;}
 function chipsHTML(chips){
   return '<div class="ck-chips">'+chips.map(function(c){return '<span class="ck-chip'+(c.dim?" dim":" on "+c.cls)+'">'+esc(c.label)+'</span>';}).join("")+'</div>';
 }
@@ -7970,14 +7972,14 @@ function openCard(mk, sym){
 }
 
 /* ---------- alerts ---------- */
-function blankInst(){return {shnFlip:{on:false,tfs:["D"]}, shnStop:{on:false,tfs:["D"]}, dc20:{on:false,rules:["R1"],tfs:["D"]}, cross:{on:false,level:"",tfs:["D"]}, move:{on:false,pct:"1.5",mins:"15",tfs:["15m"]}};}
+function blankInst(){return {shnFlip:{on:false,tfs:["D"]}, shnStop:{on:false,tfs:["D"]}, shnState:{on:false,tfs:["2h"]}, dc20:{on:false,rules:["R1"],tfs:["D"]}, cross:{on:false,level:"",tfs:["D"]}, move:{on:false,pct:"1.5",mins:"15",tfs:["15m"]}};}
 function loadRules(){
   var d={phone:false,telegram:false,quietOn:true,quietFrom:"23:30",quietTo:"08:45",sessionOnly:true,inst:{}};
   var s=lj("ck_rules"); if(s&&typeof s==="object"){ ["phone","telegram","quietOn","quietFrom","quietTo","sessionOnly"].forEach(function(k){ if(k in s) d[k]=s[k]; }); if(s.inst) d.inst=s.inst; }
   return d;
 }
 function saveRules(){lj("ck_rules", CK.rules);}
-function inst(id){ if(!CK.rules.inst[id]) CK.rules.inst[id]=blankInst(); return CK.rules.inst[id]; }
+function inst(id){ if(!CK.rules.inst[id]) CK.rules.inst[id]=blankInst(); var r=CK.rules.inst[id]; if(!r.shnState) r.shnState={on:false,tfs:["2h"]}; return r; }
 function idsAll(){
   var ids=CK.book.map(function(b){return {id:b.id, mk:"MCX", sym:b.sym, label:b.name+(b.mon?" "+b.mon:"")};});
   GORDER.forEach(function(sym){var it=gItem(sym); if(!it) return; ids.push({id:"GL|"+sym, mk:"GL", sym:sym, label:(it.name||sym)+" "+sym});});
@@ -7988,7 +7990,8 @@ function tfsChips(id, path, selected){
 }
 function ruleBlock(id, r){
   var rs=["R1","R2","R3","R4"].map(function(k){var on=r.dc20.rules.indexOf(k)>=0; return '<button type="button" class="ck-tf'+(on?" on":"")+'" data-id="'+esc(id)+'" data-path="dc20rule" data-tf="'+k+'">'+k+'</button>';}).join("");
-  return '<div class="ck-rule"><div class="ck-rl"><label class="ck-chk"><input type="checkbox" data-id="'+esc(id)+'" data-path="shnFlip"'+(r.shnFlip.on?" checked":"")+'> SHN BUY / SELL flip</label><span class="ck-tfs">'+tfsChips(id,"shnFlip",r.shnFlip.tfs)+'</span></div>'+
+  return '<div class="ck-rule"><div class="ck-rl"><label class="ck-chk"><input type="checkbox" data-id="'+esc(id)+'" data-path="shnState"'+(r.shnState.on?" checked":"")+'> SHN v3.4 state change</label><span class="ck-tfs">'+tfsChips(id,"shnState",r.shnState.tfs)+'</span></div>'+
+    '<div class="ck-rl"><label class="ck-chk"><input type="checkbox" data-id="'+esc(id)+'" data-path="shnFlip"'+(r.shnFlip.on?" checked":"")+'> SHN BUY / SELL flip</label><span class="ck-tfs">'+tfsChips(id,"shnFlip",r.shnFlip.tfs)+'</span></div>'+
     '<div class="ck-rl"><label class="ck-chk"><input type="checkbox" data-id="'+esc(id)+'" data-path="shnStop"'+(r.shnStop.on?" checked":"")+'> Stop hit</label><span class="ck-tfs">'+tfsChips(id,"shnStop",r.shnStop.tfs)+'</span></div>'+
     '<div class="ck-rl"><label class="ck-chk"><input type="checkbox" data-id="'+esc(id)+'" data-path="dc20"'+(r.dc20.on?" checked":"")+'> DC20 retest R1–R4</label><span class="ck-tfs">'+rs+tfsChips(id,"dc20",r.dc20.tfs)+'</span></div>'+
     '<div class="ck-rl"><label class="ck-chk"><input type="checkbox" data-id="'+esc(id)+'" data-path="cross"'+(r.cross.on?" checked":"")+'> Price crosses level</label><input type="number" step="any" data-id="'+esc(id)+'" data-path="level" value="'+esc(r.cross.level)+'" placeholder="level"></div>'+
@@ -8134,6 +8137,14 @@ function evaluate(){
         }
       });
     });
+    if(r.shnState && r.shnState.on && window.SHN && SHN.stateFor){
+      (r.shnState.tfs||["2h"]).forEach(function(tf){
+        var s=SHN.stateFor(it.sym, tf, it.mk); if(!s || s.forming) return;
+        var pk="v34|"+it.id+"|"+tf, cur=s.code+"|"+(s.flipTime||""), prev=CK.shnPrev[pk];
+        CK.shnPrev[pk]=cur; if(prev==null || prev===cur) return;
+        deliver({key:"shnState|"+it.id+"|"+tf+"|"+cur, sym:it.sym, rule:"shn-state", title:"SHN "+s.label+" · "+it.sym, body:(TFN[tf]||tf)+" · "+s.action});
+      });
+    }
     if(r.dc20.on){
       (r.dc20.tfs||["D"]).forEach(function(tf){
         chipInfo(it.mk==="GL"?[it.sym]:namesOf(CK.book.filter(function(b){return b.id===it.id;})[0]||{sym:it.sym}), it.id).forEach(function(c){
@@ -8175,6 +8186,7 @@ function openRules(mk, sym){
   if(d) d.scrollIntoView({block:"start"});
 }
 CK.evaluate=evaluate; CK.ensureData=ensureData; CK.refreshQuotes=refreshQuotes; CK.openRules=openRules;
+window.SHNAlert=deliver;
 
 /* ---------- chart overlay + parity block (does not touch SHN maths) ---------- */
 function overlayArr(B, tf){
@@ -8288,5 +8300,7 @@ function boot(){
 boot();
 })();
 </script>
+<script src="js/shn_v34.js"></script>
+<script src="js/shn_app.js"></script>
 </body>
 </html>
