@@ -103,3 +103,21 @@ Computed by the same SHN Matrix v3.4 engine as `js/shn_v34.js` (V4a HA flip, bod
 ```
 
 The numbers above are a shape example for the scanner. The phone does not ship this object and will not display it unless a scanner actually serves the file.
+
+## Screener signals (optional)
+
+When the phone has candles it computes these itself and ignores the block. A laptop scanner may include them so the phone can show chips before it has fetched candles. All of them are on closed bars. There is no combined confluence score. `optional_met` is a plain count.
+
+| Field | Meaning |
+|---|---|
+| `signals.ut` | `{ "dir": "B" or "S", "bars_ago": 2, "time": unix }` or null. UT Bot, close, key 1.0, ATR 10 |
+| `signals.shn` | Same shape. V4a HA colour flip, body ≥ 0.3 × ATR(14) |
+| `signals.ith` | Same shape. `B` = ITL (pivot low 20/20), `S` = ITH (pivot high 20/20). `bars_ago` is from the confirmation bar, 20 bars after the pivot |
+| `signals.dc20` | Same shape. Buy = close crosses above the prior 20-bar highest high. Sell is the prior 20-bar lowest low |
+| `signals.dc40` | Same shape with length 40 |
+| `signals.mom` | 0–100. 25 points each: EMA13 rising, MACD(12,26,9) histogram rising, histogram above 0, and no BB(20,2)/KC(20,1.5) squeeze that ended in the last 5 bars. Shorts mirror the slopes |
+| `signals.vol_x` | Last bar volume ÷ 20-bar average volume |
+| `signals.optional_met` | How many of the optional signals fired inside the scan window |
+| `signals.optional_n` | How many signals the scan marked optional |
+
+`bars_ago` of 0 is the last closed bar.
