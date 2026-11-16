@@ -197,6 +197,7 @@
       '</div>';
     h += '<div class="card" style="margin-top:10px">' + (bad ? '<div class="dn">Stop is on the wrong side of entry for a ' + esc(s.side) + '.</div>' : '') +
       '<div class="row"><span class="mu">Lots</span><span class="big">' + (SL && !bad ? lots : '–') + '</span></div>' +
+      (SL && !bad && lots === 0 && riskLot > 0 ? '<div class="wn" style="font-size:12px">1 lot needs ' + inr(riskLot) + ' risk at this stop — raise risk, tighten the stop, or use the mini contract.</div>' : '') +
       '<div class="kv"><div><span>Contract</span>' + esc(f.symbol || '–') + '</div><div><span>Risk / lot (1R)</span>' + (SL ? inr(riskLot) : '–') + '</div>' +
       '<div><span>Actual risk</span>' + (SL && !bad ? inr(lots * riskLot) : '–') + '</div><div><span>Notional</span>' + (SL && !bad ? inr(lots * lot * E) : '–') + '</div>' +
       [1, 2, 3].map(function (m) { return '<div><span>' + m + 'R target</span>' + (SL && !bad ? n(E + dir * m * per) + ' <span class="ok">+' + inr(lots * riskLot * m) + '</span>' : '–') + '</div>'; }).join('') +
