@@ -309,6 +309,8 @@
   function boot() {
     try { nav(); } catch (e) {} try { commodities(); } catch (e) {} try { staleBanner(); } catch (e) {}
     setInterval(function () { try { fixClose(); } catch (e) {} }, 1000);
+    setTimeout(function () { try { if (typeof window.feedLoad === 'function') window.feedLoad(); } catch (e) {} }, 1500);   // pull the VPS calendar once at start
+    setInterval(function () { try { if (!document.hidden) window.feedLoad(); } catch (e) {} }, 30 * 60 * 1000);
     try { if ($('tab-rotation') && $('tab-rotation').classList.contains('active')) renderRRG(); } catch (e) {}
     try { if (window.FXV && FXV.open && FXV.bars) fxDraw(); } catch (e) {}
   }
