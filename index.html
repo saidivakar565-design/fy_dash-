@@ -4,11 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0d1117">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-O24V1F27f8pb0glCkelh3cVHLNiHAJ5gCaVtq2aNch8=' 'sha256-0TopaehSpUgjqQkoJwN//emnNlISxntXT/MQKooVYhw=' 'sha256-Xd2FlWT79g4/5b2pY+n397fX7+OHuH81s17+Jja77JQ=' 'sha256-2Ovy2n1ybf3P1RmYJYX+KyJvHcS94rTHPUWRDcLShuo=' 'sha256-hHNYnFebn9fC5G48TQDGpFUq+9GurzfucVWD+7cjNLE=' 'sha256-vM746bTlsQ/XDKJOG8xtfgUUXwYrkmYz8BWizeXBMJ0=' 'sha256-eeHzsCRnJ4hqdYeNxpB8mNyceSfsN674/GyykWx0x5g='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; manifest-src 'self'; worker-src 'self' blob:; connect-src 'self' https://api-t1.fyers.in https://public.fyers.in wss://socket.fyers.in ws://127.0.0.1:8765 ws://localhost:8765 ws://*:8765 wss://*:8765 wss://*.ts.net https://desktop-3565pu7.tailece833.ts.net:8443 https://desktop-3565pu7.tailece833.ts.net:* https://*.tailece833.ts.net:* https://*.ts.net:* http://127.0.0.1:* http://localhost:*; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-O24V1F27f8pb0glCkelh3cVHLNiHAJ5gCaVtq2aNch8=' 'sha256-0TopaehSpUgjqQkoJwN//emnNlISxntXT/MQKooVYhw=' 'sha256-MoeeKOHynEQQKwPCLvBab2zn4fi912NGslapPrLuvvs=' 'sha256-2Ovy2n1ybf3P1RmYJYX+KyJvHcS94rTHPUWRDcLShuo=' 'sha256-hHNYnFebn9fC5G48TQDGpFUq+9GurzfucVWD+7cjNLE=' 'sha256-O8xYKw1kiFV6vaXI5pKCwZiKoguMCEavR/i8Q6Ud3VQ=' 'sha256-eeHzsCRnJ4hqdYeNxpB8mNyceSfsN674/GyykWx0x5g='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; manifest-src 'self'; worker-src 'self' blob:; connect-src 'self' https://srv2165780.hstgr.cloud wss://srv2165780.hstgr.cloud https://api-t1.fyers.in https://public.fyers.in wss://socket.fyers.in ws://127.0.0.1:8765 ws://localhost:8765 ws://*:8765 wss://*:8765 wss://*.ts.net https://desktop-3565pu7.tailece833.ts.net:8443 https://desktop-3565pu7.tailece833.ts.net:* https://*.tailece833.ts.net:* https://*.ts.net:* http://127.0.0.1:* http://localhost:*; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <link rel="icon" href="icon-192.png">
-<title>Cockpit · Fyers live</title>
+<title>Cockpit · Cloud OpenAlgo</title>
 <link rel="manifest" href="manifest.webmanifest">
+<script src="js/vps_bridge.js?v=20261116"></script>
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="mobile-web-app-capable" content="yes">
 <style>
@@ -4078,7 +4079,7 @@ Index::`,"LONG","NotOk","STK_PRC","connect","blob","HSM_LOG_Flag","wasClean","se
 <section class="tab" id="tab-live">
  <div class="panel fyp" id="fypanel" style="margin-top:0">
   <div class="lvhead"><h2>Data source</h2><span class="lvpill" id="fypill">…</span></div>
-  <div class="seg fysrc" id="fysrc"><button data-v="fyers" type="button">Fyers direct · phone, no laptop</button><button data-v="openalgo" type="button">OpenAlgo · laptop at home</button></div>
+  <div class="seg fysrc" id="fysrc"><button data-v="openalgo" type="button">Cloud OpenAlgo · srv2165780.hstgr.cloud</button><button data-v="fyers" type="button" style="display:none" title="Disabled: logs out the cloud server">Fyers direct (off)</button></div>
   <div id="fybox" style="margin-top:10px">
    <div class="note">This page talks to Fyers <b>directly from your phone</b> (no laptop, no server). It only <b>reads</b> prices; it never places orders. Your App ID, Secret and today's token are stored <b>only in this phone's browser</b> and are sent only to <code>api-t1.fyers.in</code>. The page itself contains no keys.</div>
    <div class="form" style="margin-top:10px">
@@ -4101,11 +4102,11 @@ Index::`,"LONG","NotOk","STK_PRC","connect","blob","HSM_LOG_Flag","wasClean","se
    <div class="lvbtns" style="margin-top:10px"><button class="btn" id="fyroll" type="button">Refresh MCX contract list</button><button class="btn" id="fywipe" type="button">Remove all Fyers data from this phone</button></div>
    <div class="sub" id="fyrollmsg" style="margin-top:6px"></div>
   </div>
-  <div id="oabox" class="note" style="margin-top:10px;display:none"><b>OpenAlgo mode</b> uses OpenAlgo on your laptop (laptop must be on and logged in to Fyers). If this page is opened from an <code>https://</code> address, the browser only allows a <code>wss://</code> WebSocket URL; at home it is simpler to open your Market Radar link from the laptop.</div>
+  <div id="oabox" class="note" style="margin-top:10px;display:none"><b>Cloud OpenAlgo</b> on your Hostinger server (<code>srv2165780.hstgr.cloud</code>) feeds live ticks, candles, the Daily board, charts and SHN signals. Works on mobile data, no laptop needed. Do your one daily Fyers login on the server (OpenAlgo web page); this phone never logs in to Fyers itself.</div>
  </div>
  <div class="panel" id="oapanel">
-  <div class="lvhead"><h2>OpenAlgo connection (laptop)</h2><span class="lvpill" id="lvpill">Disconnected</span></div>
-  <div class="note"><b>Ready to connect.</b> If OpenAlgo is running on the <b>same computer</b> as this file, use <code>ws://127.0.0.1:8765</code> (pre-filled). A public <code>wss://</code> URL (ngrok, Cloudflare Tunnel or a VPS) is only needed when you open this file on <b>another device</b>, such as your phone. Your OpenAlgo API key is kept only in this browser and sent only to the WebSocket URL below.</div>
+  <div class="lvhead"><h2>Cloud OpenAlgo connection</h2><span class="lvpill" id="lvpill">Disconnected</span></div>
+  <div class="note"><b>One-time setup:</b> WebSocket URL <code>wss://srv2165780.hstgr.cloud/ws</code> is pre-filled. Paste the API key from <b>srv2165780.hstgr.cloud → API Key</b>, keep Auto-connect ticked and press Connect. (Laptop OpenAlgo: <code>ws://127.0.0.1:8765</code>.) A public <code>wss://</code> URL (ngrok, Cloudflare Tunnel or a VPS) is only needed when you open this file on <b>another device</b>, such as your phone. Your OpenAlgo API key is kept only in this browser and sent only to the WebSocket URL below.</div>
   <div class="form" style="margin-top:12px">
    <label for="lvurl">WebSocket URL</label><input type="text" id="lvurl" placeholder="ws://127.0.0.1:8765" autocomplete="off" spellcheck="false">
    <label for="lvkey">OpenAlgo API key</label><div style="display:flex;gap:6px"><input type="password" id="lvkey" placeholder="OpenAlgo → API Key page" autocomplete="off" style="flex:1"><button class="btn" id="lvshow" type="button">Show</button></div>
@@ -4704,7 +4705,8 @@ function setupMcxPanel(){ if(!$('mcxpanel')) return;
   renderMcxPanel(true); }
 /* Default WebSocket URL: OpenAlgo on this device (127.0.0.1) when the page is local, otherwise the host that served the page
    (e.g. the laptop's Tailscale IP or name, where Tailscale Serve forwards port 8765 to OpenAlgo). */
-function defaultWsUrl(){ const h=location.hostname||''; if(!h || /^(127\.0\.0\.1|localhost|\[?::1\]?)$/i.test(h) || fyDefaultSource()==='fyers') return LCFG.default_url;  // public host (GitHub Pages): no OpenAlgo there
+function defaultWsUrl(){ const h=location.hostname||''; if(h && !/^(127\.0\.0\.1|localhost|\[?::1\]?)$/i.test(h) && window.VPSB) return VPSB.ws;  // phone/GitHub Pages: cloud OpenAlgo (Hostinger VPS)
+  if(!h || /^(127\.0\.0\.1|localhost|\[?::1\]?)$/i.test(h) || fyDefaultSource()==='fyers') return LCFG.default_url;  // public host (GitHub Pages): no OpenAlgo there
   return `${location.protocol==='https:'?'wss':'ws'}://${h.includes(':')?'['+h+']':h}:8765`; }
 const LiveFeed = {
   ws:null, cfg:null, phase:'idle', manual:false, retry:0, bretry:0, retryT:null, subs:{}, broker:'', rx:{}, rxTotal:0, unmatched:{}, zeroLtp:{}, subAt:0, connAt:0, diag:false, lastClose:null,
@@ -4866,10 +4868,11 @@ const FY_KEY='fy_cfg', FY_TOK='fy_tok', FY_MASTER='fy_mcx_master', FY_STATE='fy_
 const BIGMV={mcx:1.5, eq:2.0};   // % move that gets the big-move highlight
 function lsGet(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } }
 function lsSet(k,v){ try{ if(v==null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e){ return false; } }
-function fyDefaultSource(){ const h=location.hostname||'';
+function fyDefaultSource(){ const h=location.hostname||''; if(window.VPSB) return 'openalgo';  // Fyers direct would log out the cloud OpenAlgo server (one login per Fyers app)
   return /^(127\.|localhost$|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|100\.|\[?::1)|\.ts\.net$|^desktop-/i.test(h) ? 'openalgo' : 'fyers'; }
 const FyCfg = Object.assign({source:null, appId:'', secret:'', remember:true, redirect:'', auto:true}, lsGet(FY_KEY)||{});
 if(FyCfg.source!=='fyers' && FyCfg.source!=='openalgo') FyCfg.source=fyDefaultSource();
+if(window.VPSB && FyCfg.source==='fyers'){ FyCfg.source='openalgo'; }
 const FYMODE = () => FyCfg.source==='fyers';
 function fySave(){ const c={...FyCfg}; if(!c.remember){ c.secret=''; } lsSet(FY_KEY, c); }
 function fyRedirect(){ return (FyCfg.redirect||'').trim() || (location.protocol==='https:' ? location.origin+location.pathname : 'https://trade.fyers.in/api-login/redirect-uri/index.html'); }
@@ -4903,8 +4906,8 @@ const FY_ROLL0 = fyRoll();
 LiveFeed.load();
 /* ---------- Fyers auth ---------- */
 const FyAuth = {
-  tok(){ return lsGet(FY_TOK); },
-  valid(){ const t=this.tok(); return !!(t && t.access && t.appId===FyCfg.appId && (t.exp||0)*1000 > Date.now()+60e3); },
+  tok(){ if(window.VPSB && VPSB.active()) return VPSB.tok(); return lsGet(FY_TOK); },  // cloud OpenAlgo serves Fyers history (js/vps_bridge.js)
+  valid(){ if(window.VPSB && VPSB.active()) return true; const t=this.tok(); return !!(t && t.access && t.appId===FyCfg.appId && (t.exp||0)*1000 > Date.now()+60e3); },
   canRefresh(){ const t=this.tok(); return !!(t && t.refresh && t.appId===FyCfg.appId && (t.rexp||0) > Date.now()+60e3); },
   async hash(){ if(!(window.crypto && crypto.subtle)) throw new Error('This browser blocks the secure hash function. Open the page over https (the GitHub Pages link), not as a file.');
     const b=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(FyCfg.appId+':'+FyCfg.secret));
@@ -5041,7 +5044,7 @@ function fyPaint(){ if(!$('fypanel')) return; const fy=FYMODE(), t=FyAuth.tok(),
   document.querySelectorAll('#fysrc button').forEach(b=>b.classList.toggle('on', b.dataset.v===FyCfg.source));
   $('fybox').style.display=fy?'':'none'; $('oabox').style.display=fy?'none':''; if($('oapanel')) $('oapanel').style.display=fy?'none':'';
   const pill=$('fypill'), left=t&&t.exp?t.exp*1000-Date.now():0;
-  if(!fy){ pill.className='lvpill'; pill.textContent='Source: OpenAlgo (laptop)'; }
+  if(!fy){ pill.className='lvpill'+(LiveFeed.ws?' ok':''); pill.textContent='Source: Cloud OpenAlgo'; }
   else if(ok){ pill.className='lvpill '+(left<2*3600e3?'wait':'ok'); pill.textContent=left<2*3600e3?'Fyers login expires soon':'Fyers logged in'; }
   else { pill.className='lvpill err'; pill.textContent=t?'Fyers login expired':'Fyers: not logged in'; }
   $('fytok').innerHTML = !t ? 'Not logged in on this phone yet.' :
@@ -5062,7 +5065,8 @@ function setupFyers(){ if(!$('fypanel')) return;
     const rd=$('fyredir').value.trim(); FyCfg.redirect = rd && rd!==(location.protocol==='https:'?location.origin+location.pathname:'https://trade.fyers.in/api-login/redirect-uri/index.html') ? rd : ''; fySave(); };
   ['fyapp','fysec','fyredir'].forEach(id=>$(id).addEventListener('change', ()=>{ read(); fyPaint(); }));
   ['fyrem','fyauto'].forEach(id=>$(id).addEventListener('change', ()=>{ read(); fyPaint(); }));
-  $('fysrc').onclick=e=>{ const b=e.target.closest('button[data-v]'); if(!b || b.dataset.v===FyCfg.source) return; LiveFeed.disconnect(true); FyCfg.source=b.dataset.v; fySave();
+  $('fysrc').onclick=e=>{ const b=e.target.closest('button[data-v]'); if(!b || b.dataset.v===FyCfg.source) return;
+    if(b.dataset.v==='fyers' && !confirm('Fyers direct logs in to Fyers from this phone and LOGS OUT the cloud OpenAlgo server (and Market Radar): your Fyers app allows one login at a time. Switch anyway?')) return; LiveFeed.disconnect(true); FyCfg.source=b.dataset.v; fySave();
     LiveFeed.log('Data source: '+(FYMODE()?'Fyers direct':'OpenAlgo')); LiveFeed.setStatus('','Disconnected', FYMODE()?'Fyers direct selected.':'OpenAlgo selected — enter the WebSocket URL and API key below.'); fyPaint(); };
   $('fysecshow').onclick=()=>{ const k=$('fysec'); k.type=k.type==='password'?'text':'password'; $('fysecshow').textContent=k.type==='password'?'Show':'Hide'; };
   $('fyredircopy').onclick=()=>{ const v=$('fyredir').value; (navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).then(()=>{ $('fyredircopy').textContent='Copied'; setTimeout(()=>$('fyredircopy').textContent='Copy',1500); }).catch(()=>{ $('fyredir').select(); }); };
@@ -7403,7 +7407,8 @@ function bindCfg(id,after){var b=g(id+"-sv"); if(!b) return; b.onclick=function(
 /* ---------- Fyers direct candles (same login as the Live feed tab: fy_cfg / fy_tok) ---------- */
 var FYAPI="https://api-t1.fyers.in";
 var FYTF={D:{res:"D",days:365,span:86400},"4h":{res:"240",days:99,span:14400},"2h":{res:"120",days:60,span:7200},"15m":{res:"15",days:20,span:900}};
-function fyAuth(){var c=(typeof FyCfg!=="undefined"&&FyCfg&&FyCfg.appId)?{appId:FyCfg.appId}:(lj("fy_cfg")||{});
+function fyAuth(){if(window.VPSB&&VPSB.active()) return {h:"cloud:openalgo"};  /* cloud OpenAlgo via js/vps_bridge.js */
+  var c=(typeof FyCfg!=="undefined"&&FyCfg&&FyCfg.appId)?{appId:FyCfg.appId}:(lj("fy_cfg")||{});
   var t=(typeof FyAuth!=="undefined"&&FyAuth.tok)?FyAuth.tok():lj("fy_tok");
   if(!c.appId||!t||!t.access||t.appId!==c.appId) return {err:"Fyers not logged in on this phone (Live feed tab → Fyers direct → Log in)"};
   if(typeof FyAuth!=="undefined"&&FyAuth.valid){ if(!FyAuth.valid()) return {err:"today's Fyers login expired (Live feed tab → Quick renew)"}; }
@@ -8315,5 +8320,6 @@ boot();
 <script src="js/shn_rotation.js"></script>
 <script src="js/shn_watchlist.js"></script>
 <script src="js/shn_app.js"></script>
+<script src="js/vps_pro.js?v=20261116"></script>
 </body>
 </html>
