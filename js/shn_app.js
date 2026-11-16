@@ -1,7 +1,7 @@
 /* SHN Matrix v3.4 in the cockpit. Read-only candles and quotes. No orders, no tokens.
    MCX trade state: Fyers history already used by the Daily Board (closed bars, throttled).
    Falls back to the laptop Market Radar address (Tailscale) when Fyers is not logged in.
-   NSE screener: laptop shn_v34_state.json when reachable, else a watchlist of at most 30 symbols on Daily.
+   NSE screener: laptop shn_v34_state.json when reachable, else a watchlist of at most 50 symbols on Daily.
    NSE rotation: closed daily Fyers history for the sector indices in data/nse_sectors.json, cached on the phone. */
 (function () {
   'use strict';
@@ -26,6 +26,8 @@
   var HUB_TF = '2h';
   var busy = Object.create(null);
   var gap = 1600, lastReq = 0, pauseUntil = 0, chain = Promise.resolve();
+  var SCANP = { on: false, done: 0, total: 0 };
+  var WLNOTE = '';
   var lap = { at: 0, ok: null, err: '', scan: '' };
   var started = false;
 
@@ -141,15 +143,21 @@
     if (b[k]) delete b[k]; else b[k] = 1;
     lj('shn_bells', b);
   }
+  function wlCap() { return (window.SHNWatch && SHNWatch.CAP) || 50; }
+  function parseWl(text) {
+    if (window.SHNWatch) return SHNWatch.parseWatchlist(text, wlCap());
+    var syms = String(text || '').toUpperCase().split(/[^A-Z0-9&.-]+/).filter(Boolean);
+    var out = [];
+    syms.forEach(function (s) { if (out.length < wlCap() && out.indexOf(s) < 0) out.push(s); });
+    return out;
+  }
   function wl() {
     var s = lj('shn_nse_wl');
-    if (Array.isArray(s) && s.length) return s.slice(0, 30);
+    if (Array.isArray(s) && s.length) return parseWl(s.join(' '));
     return NSE_DEF.slice();
   }
   function saveWl(text) {
-    var syms = String(text || '').toUpperCase().split(/[^A-Z0-9&.-]+/).filter(Boolean);
-    var out = [];
-    syms.forEach(function (s) { if (out.length < 30 && out.indexOf(s) < 0) out.push(s); });
+    var out = parseWl(text);
     lj('shn_nse_wl', out);
     return out;
   }
@@ -309,16 +317,41 @@
     jobs.reduce(function (p, job) { return p.then(function () { return fetchFy(job.fy, job.tf, 'MCX').catch(function () {}); }); }, Promise.resolve())
       .then(paintAll);
   }
+  function paintScanProgress() {
+    if (UNIV === 'mcx' || (lj('shn_nse_view') || 'scan') === 'rot') return;
+    if (!$('tab-shn') || !$('tab-shn').classList.contains('active')) return;
+    var y = window.scrollY;
+    paintScreener();
+    window.scrollTo(0, y);
+  }
   function scanNse() {
     if (!auth()) return Promise.resolve();
+    if (scanNse.busy) return scanNse.busy;
     var syms = wl();
-    return syms.reduce(function (p, sym) {
-      var fy = fyOfNse(sym);
+    var pending = [];
+    syms.forEach(function (sym) { if (due(fyOfNse(sym), 'D')) pending.push(sym); });
+    SCANP.total = syms.length;
+    SCANP.done = syms.length - pending.length;
+    if (!pending.length) { SCANP.on = false; return Promise.resolve(); }
+    SCANP.on = true;
+    paintScanProgress();
+    scanNse.busy = pending.reduce(function (p, sym) {
       return p.then(function () {
-        if (!due(fy, 'D')) return null;
-        return fetchFy(fy, 'D', 'NSE').catch(function () { return null; });
+        return fetchFy(fyOfNse(sym), 'D', 'NSE').catch(function () { return null; }).then(function () {
+          SCANP.done++;
+          paintScanProgress();
+        });
       });
-    }, Promise.resolve()).then(function () { lap.scan = 'fyers'; paintScreener(); });
+    }, Promise.resolve()).then(function () {
+      SCANP.on = false;
+      lap.scan = 'fyers';
+      scanNse.busy = null;
+      paintScanProgress();
+    }, function () {
+      SCANP.on = false;
+      scanNse.busy = null;
+    });
+    return scanNse.busy;
   }
   function pullLaptop() {
     var ctl = window.AbortController ? new AbortController() : null;
@@ -1406,15 +1439,24 @@
     if (cfg.leadersOnly && pack.waiting && pack.rows.length) {
       waitNote = '<div class="rotnote">' + pack.waiting + (ROTV.eqLeft > 0 ? ' names in leading sectors are still loading.' : ' names in leading sectors have no closed bars on this phone.') + '</div>';
     }
+    var prog = '';
+    if (u === 'nse' && SCANP.on && window.SHNWatch) {
+      var label = SHNWatch.scanProgress(SCANP.done, SCANP.total);
+      if (label) prog = '<div class="snew" id="shn-scanprog">' + esc(label) + '</div>';
+    }
+    var wlBox = '';
+    if (u === 'nse') {
+      wlBox = '<h2 class="ck-h2">NSE watchlist</h2><textarea id="shn-wl" class="shnwl" rows="3">' + esc(wl().join(' ')) + '</textarea><div class="rotnote">Up to ' + wlCap() + ' symbols. Closed daily bars, one request every 1.6s.</div>' + (WLNOTE ? '<div class="rotnote">' + esc(WLNOTE) + '</div>' : '') + '<button type="button" class="btn" id="shn-wlsave">Save watchlist</button>';
+    }
     host.innerHTML = '<div class="panel" style="margin-top:0"><div class="shnmk"><button type="button" data-u="nse"' + (u === 'nse' ? ' class="on"' : '') + '>NSE stocks</button><button type="button" data-u="mcx"' + (u === 'mcx' ? ' class="on"' : '') + '>MCX instruments</button></div>' +
-      (u === 'nse' ? viewToggle('scan') : '') +
+      (u === 'nse' ? viewToggle('scan') : '') + prog +
       '<div class="shnchips" id="shn-grp">' + groups.map(function (g) { return '<button type="button" class="shnchip' + (gNow === g[0] ? ' on' : '') + '" data-g="' + esc(g[0]) + '">' + esc(g[1]) + '</button>'; }).join('') + '</div>' +
       '<div class="sscan"><div class="hd"><b>⚡ ' + esc(cfg.name) + '</b><button type="button" class="btn" id="shn-edit">Edit scan</button></div><div class="shnmeta" style="margin-top:4px">' + esc(scanBlurb(cfg)) + '</div><div class="spills">' + pills + '</div></div>' +
       '<div class="shnchips" id="shn-sort">' + sorts.map(function (s) { return '<button type="button" class="shnchip' + (curSort === s[0] ? ' on' : '') + '" data-sort="' + s[0] + '">' + s[1] + '</button>'; }).join('') + '</div>' +
       '<div class="shnstat"><div><b>' + pack.rows.length + '</b><small>match</small></div><div><b>' + pack.scanned + '</b><small>' + (pack.universe > pack.scanned ? 'of ' + pack.universe : 'scanned') + '</small></div><div><b>' + esc(TFN[pack.tf] || pack.tf) + '</b><small>timeframe</small></div><div><b>' + (pack.freshIn.length ? '+' + pack.freshIn.length : '0') + '</b><small>new</small></div></div>' +
       banner + waitNote + rows +
       '<div class="shnmeta" style="margin-top:8px">Chip = signal · B / S · bars ago (0 = last closed bar). ● = mandatory. Tap a row for the timeline.</div>' +
-      '<h2 class="ck-h2">Saved scan presets</h2>' + presetHTML + '</div>';
+      '<h2 class="ck-h2">Saved scan presets</h2>' + presetHTML + wlBox + '</div>';
     bindScreener(host);
   }
   function bindScreener(host) {
@@ -1426,6 +1468,18 @@
     host.querySelectorAll('.srow').forEach(function (el) { el.onclick = function () { openDetail(el.dataset.mkt, el.dataset.sym); }; });
     host.querySelectorAll('[data-use]').forEach(function (b) { b.onclick = function () { var p = presets().filter(function (x) { return x.id === b.dataset.use; })[0]; if (!p) return; if (p.leadersOnly) { UNIV = 'nse'; lj('shn_univ', 'nse'); lj('shn_nse_view', 'scan'); } scan._c = JSON.parse(JSON.stringify(p)); saveScan(); paintScreener(); window.scrollTo(0, 0); }; });
     host.querySelectorAll('[data-al]').forEach(function (box) { box.onchange = function (e) { e.stopPropagation(); var list = presets(); list.forEach(function (p) { if (p.id === box.dataset.al) p.alert = box.checked; }); savePresets(list); if (scan().id === box.dataset.al) { scan().alert = box.checked; saveScan(); } }; });
+    var wls = $('shn-wlsave');
+    if (wls) wls.onclick = function () {
+      var box = $('shn-wl');
+      var raw = box ? box.value : '';
+      var typed = String(raw || '').toUpperCase().split(/[^A-Z0-9&.-]+/).filter(Boolean);
+      var uniq = [];
+      typed.forEach(function (s) { if (uniq.indexOf(s) < 0) uniq.push(s); });
+      var saved = saveWl(raw);
+      WLNOTE = uniq.length > saved.length ? 'Saved the first ' + saved.length + '. The list stops at ' + wlCap() + '.' : '';
+      paintScreener();
+      if (UNIV !== 'mcx') scanNse();
+    };
   }
   function openRow(market, sym) {
     if (market === 'MCX' && typeof fxOpen === 'function' && typeof fxRow === 'function' && fxRow('M:' + sym)) { fxOpen('M:' + sym); return; }
