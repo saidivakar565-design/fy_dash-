@@ -164,6 +164,7 @@
 
   function auth() {
     try {
+      if (window.VPSB && VPSB.active()) return 'cloud:openalgo'; // history served by the cloud OpenAlgo (js/vps_bridge.js)
       if (typeof FyAuth === 'undefined' || !FyAuth.valid || !FyAuth.valid()) return null;
       var t = FyAuth.tok(); var id = (typeof FyCfg !== 'undefined' && FyCfg.appId) || t.appId;
       if (!id || !t.access) return null;

@@ -13,3 +13,14 @@ The hub Signal matrix reads Bull / Bear / Flat from Fyers bars: higher high and 
 ## SHN Matrix v3.4
 
 Trade state on the MCX hub (Flat tiles, Globe rings, chart panel), on the DC20 + SHN cards, and on the Screener tab is the validated v3.4 engine in `js/shn_v34.js` (the reference copy is `js/shn_matrix_v34_reference.js`). It reads closed bars only. MCX uses Fyers history for D, 4H, 2H and 15m, throttled under 40 requests a minute, and the laptop Market Radar address when Fyers is not logged in. The NSE screener reads `{laptop}/shn_v34_state.json` (schema in `data/shn_v34_schema.md`). When that file is unreachable it scans the on-phone watchlist, at most 50 NSE symbols, on Daily. Requests stay 1.6 seconds apart, under 40 a minute, so the first scan of a full list takes about a minute and a half to two minutes. The list paints each name as its closed daily bar arrives. No order endpoints are called.
+
+## Cloud OpenAlgo (Hostinger VPS) — since 16 Nov 2026
+
+The phone cockpit now runs entirely on the cloud OpenAlgo at `srv2165780.hstgr.cloud` (one daily Fyers login on the server feeds everything).
+
+- **Live ticks:** `wss://srv2165780.hstgr.cloud/ws` (pre-filled). Paste the OpenAlgo API key once on the Live feed tab; it is kept only in this browser's localStorage and is **never** stored in this repo.
+- **Candles / Daily board / SHN tiles / charts:** `js/vps_bridge.js` re-routes the page's Fyers `/data/history` calls to `https://srv2165780.hstgr.cloud/cockpit/fyhist` (same Fyers format, served from OpenAlgo `/api/v1/history`).
+- **Fyers direct is switched off:** a Fyers API app allows one login at a time, so a phone login would log out the server.
+- **PRO button** (`js/vps_pro.js`, read-only): SHN v3.4 server signals (`/cockpit/shn`, refreshed 5 min after each 2H close on weekdays), live MCX watchlist (% change, day range, OI), paper P&L from positionbook, R-multiple lot calculator, MCX session clock + expiry warnings.
+- Server side: nginx allows CORS from `https://saidivakar565-design.github.io` only, and only for read endpoints (quotes, multiquotes, history, positionbook, funds, ping, depth, intervals, analyzer, orderbook, tradebook). No order endpoint is reachable from this page.
+- Previous version: branch `backup-pre-cloud-openalgo-20261116`.
