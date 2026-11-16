@@ -33,6 +33,7 @@
       '.ckpop{position:absolute;z-index:30;max-width:min(360px,86vw);background:#161b22;border:1px solid #e3b341;border-radius:10px;padding:10px 12px;color:#e6edf3;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.5)}' +
       '.ckpop .t{font-weight:700;margin:4px 0}.ckpop .m{color:#8b949e;font-size:12px}.ckpop .x{position:absolute;right:6px;top:4px;background:none;border:0;color:#8b949e;font-size:18px}' +
       '.ckpop .imp{display:inline-block;padding:1px 6px;border-radius:6px;font-size:11px;margin-right:6px;border:1px solid #30363d}.ckpop .imp.high{color:#f85149;border-color:#f85149}.ckpop .imp.med{color:#e3b341;border-color:#e3b341}' +
+      '@media (max-width:640px){body.fxopen #proFab{display:none}}' +
       '.fxev .cktime{color:#8b949e;font-size:11px;margin-right:6px;white-space:nowrap}');
 
   /* ---------- 1. navigation: duplicate / laptop-only pages under "More" ---------- */
@@ -279,6 +280,8 @@
         var b = btn.querySelector('span > b'); if (b) b.insertAdjacentHTML('beforebegin', '<span class="cktime">' + esc(istFmt(p.when, true)) + ' IST</span>'); });
     };
   }
+  var _close = window.fxClose;   // Plotly.purge drops plotly_* listeners: re-bind them on the next open
+  if (typeof _close === 'function') window.fxClose = function () { var r = _close.apply(this, arguments); var el = $('fxchart'); if (el) { delete el.dataset.ckb; delete el.dataset.ckrl; } var pp = document.querySelector('.ckpop'); if (pp) pp.remove(); return r; };
   var _draw = window.fxDraw;
   if (typeof _draw === 'function') {
     window.fxDraw = function () {
