@@ -3,8 +3,8 @@
    so this phone must never log in to Fyers itself ("Fyers direct" would cancel the server's token).
    What it does:
    1. Moves saved settings from "Fyers direct" / laptop URLs to the cloud OpenAlgo WebSocket (wss://…/ws).
-   2. Re-routes every Fyers GET /data/history call made by the cockpit to https://srv2165780.hstgr.cloud/cockpit/fyhist,
-      which answers in the same Fyers format from OpenAlgo's /api/v1/history (server-side login, already repaired candles).
+   2. Re-routes every Fyers GET /data/history and /data/quotes call made by the cockpit to https://srv2165780.hstgr.cloud/cockpit/fyhist
+      and /cockpit/fyquotes, which answer in the same Fyers format from OpenAlgo's /api/v1/history and /multiquotes (server-side login).
    3. Exposes window.VPSB for the Pro tools (js/vps_pro.js).
    The OpenAlgo API key is NEVER in this repo: you paste it once on the Live feed tab; it lives in this browser's
    localStorage (cc_live_cfg) and is sent only to srv2165780.hstgr.cloud. No order endpoint is ever called. */
@@ -51,17 +51,18 @@
     stats: { routed: 0, errors: 0, last: '' }
   };
 
-  /* ---- 2. Fyers history → cloud OpenAlgo ---- */
+  /* ---- 2. Fyers history + quotes → cloud OpenAlgo ---- */
   var _fetch = window.fetch.bind(window);
   window.fetch = function (input, init) {
     try {
       var url = typeof input === 'string' ? input : (input && input.url) || '';
-      if (url.indexOf('https://api-t1.fyers.in/data/history') === 0 && source() !== 'fyers') {
-        var q = url.slice(url.indexOf('?'));
+      var isH = url.indexOf('https://api-t1.fyers.in/data/history') === 0, isQ = url.indexOf('https://api-t1.fyers.in/data/quotes') === 0;
+      if ((isH || isQ) && source() !== 'fyers') {
+        var q = url.slice(url.indexOf('?')), ep = isH ? '/cockpit/fyhist' : '/cockpit/fyquotes';
         var k = key();
         if (!k) return Promise.resolve(new Response(JSON.stringify({ s: 'error', code: -16, message: 'Cloud OpenAlgo API key not set (Live feed tab)' }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
         VPSB.stats.routed++;
-        return _fetch(BASE + '/cockpit/fyhist' + q, { method: 'GET', headers: { 'X-API-KEY': k }, credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store' })
+        return _fetch(BASE + ep + q, { method: 'GET', headers: { 'X-API-KEY': k }, credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store' })
           .then(function (r) { VPSB.stats.last = new Date().toISOString(); if (!r.ok) VPSB.stats.errors++; return r; });
       }
     } catch (e) {}
