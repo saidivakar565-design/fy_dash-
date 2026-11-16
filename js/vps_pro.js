@@ -338,3 +338,5 @@
   }
   if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', liveTabNotes); else liveTabNotes();
 })();
+/* proposed-cleanup-20261116: load the cleanup layer (external file, allowed by script-src 'self') */
+(function () { try { if (document.querySelector('script[data-ck]')) return; var s = document.createElement('script'); s.src = 'js/cleanup_v1.js?v=20261116'; s.dataset.ck = '1'; s.async = false; document.body.appendChild(s); } catch (e) {} })();

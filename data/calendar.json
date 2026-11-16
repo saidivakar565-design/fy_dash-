@@ -1,63 +1,705 @@
 {
-  "updated": "2026-11-02T08:40:00+05:30",
-  "tz": "Asia/Kolkata",
-  "source": "MCX Daily Board macro clock, 2 Nov 2026 08:40 IST",
-  "events": [
-    {
-      "id": "mcx-open-2026-11-02",
-      "title": "MCX open after the weekend",
-      "when": "2026-11-02T09:00:00+05:30",
-      "impact": "low",
-      "assets": ["GOLD", "SILVER", "CRUDEOIL", "NATURALGAS", "ZINC", "ALUMINIUM"],
-      "note": "Friday: silver −5.5%, gold −2.8%, zinc −0.9%, natural gas −1.7%, aluminium +0.1%, crude +2.3%. Overseas gold is rebounding and oil is lower, so the open can gap against Friday — above all for crude and gold."
-    },
-    {
-      "id": "us-ism-mfg-2026-11-02",
-      "title": "US ISM Manufacturing PMI (Oct)",
-      "when": "2026-11-02T20:30:00+05:30",
-      "impact": "high",
-      "assets": ["CRUDEOIL", "GOLD", "SILVER", "NIFTY", "ZINC", "ALUMINIUM"],
-      "note": "Forecast 54.6, previous 54.5. US clocks went back on Sun 1 Nov, so US prints land 1h later in IST than last week."
-    },
-    {
-      "id": "us-midterms-2026-11-03",
-      "title": "US midterms",
-      "when": "2026-11-03T05:30:00+05:30",
-      "impact": "high",
-      "assets": ["CRUDEOIL"],
-      "note": "Crude risk into the vote. Peace-talk hopes already have overseas oil lower; Monday’s open may gap against Friday’s MCX rally."
-    },
-    {
-      "id": "us-jolts-2026-11-03",
-      "title": "US JOLTS job openings",
-      "when": "2026-11-03T20:30:00+05:30",
-      "impact": "med",
-      "assets": ["GOLD", "SILVER", "NIFTY"],
-      "note": "Forecast 7.13 million, previous 7.08 million."
-    },
-    {
-      "id": "us-ism-svc-2026-11-04",
-      "title": "US ISM Services PMI (Oct)",
-      "when": "2026-11-04T20:30:00+05:30",
-      "impact": "high",
-      "assets": ["GOLD", "SILVER", "CRUDEOIL", "NIFTY", "ZINC", "ALUMINIUM"],
-      "note": "Forecast 54.8, previous 54.9."
-    },
-    {
-      "id": "us-nfp-2026-11-06",
-      "title": "US NFP and unemployment (Oct)",
-      "when": "2026-11-06T19:00:00+05:30",
-      "impact": "high",
-      "assets": ["GOLD", "SILVER", "CRUDEOIL", "NIFTY", "ZINC", "ALUMINIUM"],
-      "note": "Payrolls forecast +65K, previous +29K. Unemployment forecast 4.2%, previous 4.2%."
-    },
-    {
-      "id": "us-michigan-2026-11-06",
-      "title": "Michigan consumer sentiment",
-      "when": "2026-11-06T20:30:00+05:30",
-      "impact": "med",
-      "assets": ["GOLD", "SILVER", "NIFTY"],
-      "note": "Forecast 48.2, previous 48. Prints after NFP the same evening."
-    }
-  ]
+ "updated": "2026-11-16T22:55:54+05:30",
+ "tz": "Asia/Kolkata",
+ "source": "Auto-built on the VPS: ForexFactory weekly feed + official schedules (Fed, RBI, BLS, OPEC) + EIA/API weekly rules + MCX expiries from the OpenAlgo symbol master",
+ "events": [
+  {
+   "id": "mcx-open-2026-11-02",
+   "title": "MCX open after the weekend",
+   "when": "2026-11-02T09:00:00+05:30",
+   "impact": "low",
+   "assets": [
+    "GOLD",
+    "SILVER",
+    "CRUDEOIL",
+    "NATURALGAS",
+    "ZINC",
+    "ALUMINIUM"
+   ],
+   "note": "Friday: silver −5.5%, gold −2.8%, zinc −0.9%, natural gas −1.7%, aluminium +0.1%, crude +2.3%. Overseas gold is rebounding and oil is lower, so the open can gap against Friday — above all for crude and gold."
+  },
+  {
+   "id": "us-ism-mfg-2026-11-02",
+   "title": "US ISM Manufacturing PMI (Oct)",
+   "when": "2026-11-02T20:30:00+05:30",
+   "impact": "high",
+   "assets": [
+    "CRUDEOIL",
+    "GOLD",
+    "SILVER",
+    "NIFTY",
+    "ZINC",
+    "ALUMINIUM"
+   ],
+   "note": "Forecast 54.6, previous 54.5. US clocks went back on Sun 1 Nov, so US prints land 1h later in IST than last week."
+  },
+  {
+   "id": "us-midterms-2026-11-03",
+   "title": "US midterms",
+   "when": "2026-11-03T05:30:00+05:30",
+   "impact": "high",
+   "assets": [
+    "CRUDEOIL"
+   ],
+   "note": "Crude risk into the vote. Peace-talk hopes already have overseas oil lower; Monday’s open may gap against Friday’s MCX rally."
+  },
+  {
+   "id": "us-jolts-2026-11-03",
+   "title": "US JOLTS job openings",
+   "when": "2026-11-03T20:30:00+05:30",
+   "impact": "med",
+   "assets": [
+    "GOLD",
+    "SILVER",
+    "NIFTY"
+   ],
+   "note": "Forecast 7.13 million, previous 7.08 million."
+  },
+  {
+   "id": "us-ism-svc-2026-11-04",
+   "title": "US ISM Services PMI (Oct)",
+   "when": "2026-11-04T20:30:00+05:30",
+   "impact": "high",
+   "assets": [
+    "GOLD",
+    "SILVER",
+    "CRUDEOIL",
+    "NIFTY",
+    "ZINC",
+    "ALUMINIUM"
+   ],
+   "note": "Forecast 54.8, previous 54.9."
+  },
+  {
+   "id": "us-nfp-2026-11-06",
+   "title": "US NFP and unemployment (Oct)",
+   "when": "2026-11-06T19:00:00+05:30",
+   "impact": "high",
+   "assets": [
+    "GOLD",
+    "SILVER",
+    "CRUDEOIL",
+    "NIFTY",
+    "ZINC",
+    "ALUMINIUM"
+   ],
+   "note": "Payrolls forecast +65K, previous +29K. Unemployment forecast 4.2%, previous 4.2%."
+  },
+  {
+   "id": "us-michigan-2026-11-06",
+   "title": "Michigan consumer sentiment",
+   "when": "2026-11-06T20:30:00+05:30",
+   "impact": "med",
+   "assets": [
+    "GOLD",
+    "SILVER",
+    "NIFTY"
+   ],
+   "note": "Forecast 48.2, previous 48. Prints after NFP the same evening."
+  },
+  {
+   "id": "ff-USD-2026-11-16-fed-chairman-warsh-speaks",
+   "title": "US Fed Chairman Warsh Speaks",
+   "when": "2026-11-16T22:30:00+05:30",
+   "impact": "high",
+   "assets": [
+    "GOLD",
+    "SILVER",
+    "CRUDEOIL",
+    "NATURALGAS",
+    "COPPER",
+    "ZINC",
+    "ALUMINIUM",
+    "LEAD",
+    "NICKEL",
+    "NIFTY"
+   ],
+   "note": "Source: ForexFactory feed"
+  },
+  {
+   "id": "ff-USD-2026-11-17-core-retail-sales-m/m",
+   "title": "US Core Retail Sales m/m",
+   "when": "2026-11-17T19:00:00+05:30",
+   "impact": "high",
+   "assets": [
+    "GOLD",
+    "SILVER",
+    "CRUDEOIL",
+    "NATURALGAS",
+    "COPPER",
+    "ZINC",
+    "ALUMINIUM",
+    "LEAD",
+    "NICKEL",
+    "NIFTY"
+   ],
+   "note": "Forecast 0.4% · previous 0.9%. Source: ForexFactory feed"
+  },
+  {
+   "id": "ff-USD-2026-11-17-retail-sales-m/m",
+   "title": "US Retail Sales m/m",
+   "when": "2026-11-17T19:00:00+05:30",
+   "impact": "high",
+   "assets": [
+    "GOLD",
+    "SILVER",
+    "CRUDEOIL",
+    "NATURALGAS",
+    "COPPER",
+    "ZINC",
+    "ALUMINIUM",
+    "LEAD",
+    "NICKEL",
+    "NIFTY"
+   ],
+   "note": "Forecast 0.2% · previous 0.8%. Source: ForexFactory feed"
+  },
+  {
+   "id": "ff-USD-2026-11-18-crude-oil-inventories",
+   "title": "US Crude Oil Inventories",
+   "when": "2026-11-18T21:00:00+05:30",
+   "impact": "high",
+   "assets": [
+    "CRUDEOIL",
+    "CRUDEOILM"
+   ],
+   "note": "previous 4.7M. Source: ForexFactory feed"
+  },
+  {
+   "id": "exp-2026-11-18",
+   "title": "MCX expiry: NICKEL",
+   "when": "2026-11-18T23:55:00+05:30",
+   "impact": "med",
+   "assets": [
+    "NICKEL"
+   ],
+   "note": "Contracts: NICKEL18NOV26FUT. The cockpit rolls to the next contract 3 days earlier (ROLL_DAYS=3)."
+  },
+  {
+   "id": "ff-USD-2026-11-18-fomc-meeting-minutes",
+   "title": "US FOMC Meeting Minutes",
+   "when": "2026-11-19T00:30:00+05:30",
+   "impact": "high",
+   "assets": [
+    "GOLD",
+    "SILVER",
+    "CRUDEOIL",
+    "NATURALGAS",
+    "COPPER",
+    "ZINC",
+    "ALUMINIUM",
+    "LEAD",
+    "NICKEL",
+    "NIFTY"
+   ],
+   "note": "Source: ForexFactory feed"
+  },
+  {
+   "id": "ff-USD-2026-11-19-philly-fed-manufacturing-index",
+   "title": "US Philly Fed Manufacturing Index",
+   "when": "2026-11-19T19:00:00+05:30",
+   "impact": "med",
+   "assets": [
+    "GOLD",
+    "SILVER",
+    "NIFTY"
+   ],
+   "note": "Forecast 19.2 · previous 20.9. Source: ForexFactory feed"
+  },
+  {
+   "id": "ff-USD-2026-11-19-unemployment-claims",
+   "title": "US Unemployment Claims",
+   "when": "2026-11-19T19:00:00+05:30",
+   "impact": "med",
+   "assets": [
+    "GOLD",
+    "SILVER",
+    "NIFTY"
+   ],
+   "note": "Forecast 199K · previous 200K. Source: ForexFactory feed"
+  },
+  {
+   "id": "ff-USD-2026-11-19-natural-gas-storage",
+   "title": "US Natural Gas Storage",
+   "when": "2026-11-19T21:00:00+05:30",
+   "impact": "high",
+   "assets": [
+    "NATURALGAS",
+    "NATGASMINI"
+   ],
+   "note": "previous 61B. Source: ForexFactory feed"
+  },
+  {
+   "id": "exp-2026-11-19",
+   "title": "MCX expiry: CRUDEOIL, CRUDEOILM",
+   "when": "2026-11-19T23:55:00+05:30",
+   "impact": "med",
+   "assets": [
+    "CRUDEOIL",
+    "CRUDEOILM"
+   ],
+   "note": "Contracts: CRUDEOIL19NOV26FUT, CRUDEOILM19NOV26FUT. The cockpit rolls to the next contract 3 days earlier (ROLL_DAYS=3)."
+  },
+  {
+   "id": "ff-USD-2026-11-20-revised-uom-consumer-sentiment",
+   "title": "US Revised UoM Consumer Sentiment",
+   "when": "2026-11-20T20:30:00+05:30",
+   "impact": "med",
+   "assets": [
+    "GOLD",
+    "SILVER",
+    "NIFTY"
+   ],
+   "note": "Forecast 52.1 · previous 51.0. Source: ForexFactory feed"
+  },
+  {
+   "id": "ff-USD-2026-11-20-revised-uom-inflation-expectations",
+   "title": "US Revised UoM Inflation Expectations",
+   "when": "2026-11-20T20:30:00+05:30",
+   "impact": "med",
+   "assets": [
+    "GOLD",
+    "SILVER",
+    "NIFTY"
+   ],
+   "note": "previous 4.3%. Source: ForexFactory feed"
+  },
+  {
+   "id": "exp-2026-11-24",
+   "title": "MCX expiry: NATGASMINI, NATURALGAS",
+   "when": "2026-11-24T23:55:00+05:30",
+   "impact": "med",
+   "assets": [
+    "NATGASMINI",
+    "NATURALGAS"
+   ],
+   "note": "Contracts: NATGASMINI24NOV26FUT, NATURALGAS24NOV26FUT. The cockpit rolls to the next contract 3 days earlier (ROLL_DAYS=3)."
+  },
+  {
+   "id": "api-2026-11-24",
+   "title": "API weekly crude stocks",
+   "when": "2026-11-25T03:00:00+05:30",
+   "impact": "med",
+   "assets": [
+    "CRUDEOIL",
+    "CRUDEOILM"
+   ],
+   "note": "Rule-based; confirmed by the live feed during the week."
+  },
+  {
+   "id": "eia-crude-2026-11-25",
+   "title": "EIA weekly crude inventories",
+   "when": "2026-11-25T21:00:00+05:30",
+   "impact": "high",
+   "assets": [
+    "CRUDEOIL",
+    "CRUDEOILM"
+   ],
+   "note": "Rule-based; confirmed by the live feed during the week."
+  },
+  {
+   "id": "eia-gas-2026-11-25",
+   "title": "EIA natural gas storage",
+   "when": "2026-11-25T22:30:00+05:30",
+   "impact": "high",
+   "assets": [
+    "NATURALGAS",
+    "NATGASMINI"
+   ],
+   "note": "Rule-based; moved a day earlier for the US holiday (EIA confirms the week before). "
+  },
+  {
+   "id": "us-thanksgiving-2026-11-26",
+   "title": "US Thanksgiving — COMEX/NYMEX closed, thin MCX evening",
+   "when": "2026-11-26T19:30:00+05:30",
+   "impact": "med",
+   "assets": [
+    "GOLD",
+    "SILVER",
+    "CRUDEOIL",
+    "NATURALGAS",
+    "COPPER",
+    "ZINC",
+    "ALUMINIUM",
+    "LEAD",
+    "NICKEL"
+   ],
+   "note": "MCX evening session follows a closed US market: wide spreads, weak follow-through."
+  },
+  {
+   "id": "opec-2026-11-29",
+   "title": "OPEC+ ministerial meeting (2027 quotas)",
+   "when": "2026-11-29T15:30:00+05:30",
+   "impact": "high",
+   "assets": [
+    "CRUDEOIL",
+    "CRUDEOILM"
+   ],
+   "note": "Sunday meeting; time TBC (usually afternoon IST). Expect a Monday gap risk. Source: opec.org"
+  },
+  {
+   "id": "exp-2026-11-30",
+   "title": "MCX expiry: ALUMINI, ALUMINIUM, COPPER, GOLDTEN, LEAD, LEADMINI, SILVER100, SILVERM, SILVERMIC, ZINC, ZINCMINI",
+   "when": "2026-11-30T23:55:00+05:30",
+   "impact": "med",
+   "assets": [
+    "ALUMINI",
+    "ALUMINIUM",
+    "COPPER",
+    "GOLDTEN",
+    "LEAD",
+    "LEADMINI",
+    "SILVER100",
+    "SILVERM",
+    "SILVERMIC",
+    "ZINC",
+    "ZINCMINI"
+   ],
+   "note": "Contracts: ALUMINI30NOV26FUT, ALUMINIUM30NOV26FUT, COPPER30NOV26FUT, GOLDTEN30NOV26FUT, LEAD30NOV26FUT, LEADMINI30NOV26FUT, SILVER10030NOV26FUT, SILVERM30NOV26FUT, SILVERMIC30NOV26FUT, ZINC30NOV26FUT, ZINCMINI30NOV26FUT. The cockpit rolls to the next contract 3 days earlier (ROLL_DAYS=3)."
+  },
+  {
+   "id": "us-jolts-2026-12-01",
+   "title": "US JOLTS job openings (Oct)",
+   "when": "2026-12-01T20:30:00+05:30",
+   "impact": "med",
+   "assets": [
+    "GOLD",
+    "SILVER"
+   ],
+   "note": "Source: bls.gov"
+  },
+  {
+   "id": "api-2026-12-01",
+   "title": "API weekly crude stocks",
+   "when": "2026-12-02T03:00:00+05:30",
+   "impact": "med",
+   "assets": [
+    "CRUDEOIL",
+    "CRUDEOILM"
+   ],
+   "note": "Rule-based; confirmed by the live feed during the week."
+  },
+  {
+   "id": "eia-crude-2026-12-02",
+   "title": "EIA weekly crude inventories",
+   "when": "2026-12-02T21:00:00+05:30",
+   "impact": "high",
+   "assets": [
+    "CRUDEOIL",
+    "CRUDEOILM"
+   ],
+   "note": "Rule-based; confirmed by the live feed during the week."
+  },
+  {
+   "id": "eia-gas-2026-12-03",
+   "title": "EIA natural gas storage",
+   "when": "2026-12-03T21:00:00+05:30",
+   "impact": "high",
+   "assets": [
+    "NATURALGAS",
+    "NATGASMINI"
+   ],
+   "note": "Rule-based; confirmed by the live feed during the week."
+  },
+  {
+   "id": "rbi-2026-12-04",
+   "title": "RBI MPC policy decision",
+   "when": "2026-12-04T10:00:00+05:30",
+   "impact": "high",
+   "assets": [
+    "NIFTY",
+    "BANKNIFTY",
+    "USDINR",
+    "GOLD"
+   ],
+   "note": "Repo rate + stance 10:00 IST; Governor presser ~10:45. Source: rbi.org.in"
+  },
+  {
+   "id": "us-nfp-2026-12-04",
+   "title": "US NFP + unemployment (Nov)",
+   "when": "2026-12-04T19:00:00+05:30",
+   "impact": "high",
+   "assets": [
+    "GOLD",
+    "SILVER",
+    "CRUDEOIL",
+    "NATURALGAS",
+    "COPPER",
+    "ZINC",
+    "ALUMINIUM",
+    "LEAD",
+    "NICKEL",
+    "NIFTY"
+   ],
+   "note": "Source: bls.gov"
+  },
+  {
+   "id": "exp-2026-12-04",
+   "title": "MCX expiry: GOLD, GOLDM, SILVER",
+   "when": "2026-12-04T23:55:00+05:30",
+   "impact": "med",
+   "assets": [
+    "GOLD",
+    "GOLDM",
+    "SILVER"
+   ],
+   "note": "Contracts: GOLD04DEC26FUT, GOLDM04DEC26FUT, SILVER04DEC26FUT. The cockpit rolls to the next contract 3 days earlier (ROLL_DAYS=3)."
+  },
+  {
+   "id": "api-2026-12-08",
+   "title": "API weekly crude stocks",
+   "when": "2026-12-09T03:00:00+05:30",
+   "impact": "med",
+   "assets": [
+    "CRUDEOIL",
+    "CRUDEOILM"
+   ],
+   "note": "Rule-based; confirmed by the live feed during the week."
+  },
+  {
+   "id": "eia-crude-2026-12-09",
+   "title": "EIA weekly crude inventories",
+   "when": "2026-12-09T21:00:00+05:30",
+   "impact": "high",
+   "assets": [
+    "CRUDEOIL",
+    "CRUDEOILM"
+   ],
+   "note": "Rule-based; confirmed by the live feed during the week."
+  },
+  {
+   "id": "fomc-2026-12-09",
+   "title": "FOMC rate decision + projections (SEP)",
+   "when": "2026-12-10T00:30:00+05:30",
+   "impact": "high",
+   "assets": [
+    "GOLD",
+    "SILVER",
+    "CRUDEOIL",
+    "NATURALGAS",
+    "COPPER",
+    "ZINC",
+    "ALUMINIUM",
+    "LEAD",
+    "NICKEL"
+   ],
+   "note": "Fed decision 2:00 pm ET (00:30 IST Thu); presser 2:30 pm ET. Source: federalreserve.gov"
+  },
+  {
+   "id": "us-cpi-2026-12-10",
+   "title": "US CPI (Nov)",
+   "when": "2026-12-10T19:00:00+05:30",
+   "impact": "high",
+   "assets": [
+    "GOLD",
+    "SILVER",
+    "CRUDEOIL",
+    "NATURALGAS",
+    "COPPER",
+    "ZINC",
+    "ALUMINIUM",
+    "LEAD",
+    "NICKEL",
+    "NIFTY"
+   ],
+   "note": "Source: bls.gov"
+  },
+  {
+   "id": "eia-gas-2026-12-10",
+   "title": "EIA natural gas storage",
+   "when": "2026-12-10T21:00:00+05:30",
+   "impact": "high",
+   "assets": [
+    "NATURALGAS",
+    "NATGASMINI"
+   ],
+   "note": "Rule-based; confirmed by the live feed during the week."
+  },
+  {
+   "id": "us-ppi-2026-12-15",
+   "title": "US PPI (Nov)",
+   "when": "2026-12-15T19:00:00+05:30",
+   "impact": "med",
+   "assets": [
+    "GOLD",
+    "SILVER"
+   ],
+   "note": "Source: bls.gov"
+  },
+  {
+   "id": "api-2026-12-15",
+   "title": "API weekly crude stocks",
+   "when": "2026-12-16T03:00:00+05:30",
+   "impact": "med",
+   "assets": [
+    "CRUDEOIL",
+    "CRUDEOILM"
+   ],
+   "note": "Rule-based; confirmed by the live feed during the week."
+  },
+  {
+   "id": "eia-crude-2026-12-16",
+   "title": "EIA weekly crude inventories",
+   "when": "2026-12-16T21:00:00+05:30",
+   "impact": "high",
+   "assets": [
+    "CRUDEOIL",
+    "CRUDEOILM"
+   ],
+   "note": "Rule-based; confirmed by the live feed during the week."
+  },
+  {
+   "id": "exp-2026-12-16",
+   "title": "MCX expiry: NICKEL",
+   "when": "2026-12-16T23:55:00+05:30",
+   "impact": "med",
+   "assets": [
+    "NICKEL"
+   ],
+   "note": "Contracts: NICKEL16DEC26FUT. The cockpit rolls to the next contract 3 days earlier (ROLL_DAYS=3)."
+  },
+  {
+   "id": "eia-gas-2026-12-17",
+   "title": "EIA natural gas storage",
+   "when": "2026-12-17T21:00:00+05:30",
+   "impact": "high",
+   "assets": [
+    "NATURALGAS",
+    "NATGASMINI"
+   ],
+   "note": "Rule-based; confirmed by the live feed during the week."
+  },
+  {
+   "id": "exp-2026-12-18",
+   "title": "MCX expiry: CRUDEOIL, CRUDEOILM",
+   "when": "2026-12-18T23:55:00+05:30",
+   "impact": "med",
+   "assets": [
+    "CRUDEOIL",
+    "CRUDEOILM"
+   ],
+   "note": "Contracts: CRUDEOIL18DEC26FUT, CRUDEOILM18DEC26FUT. The cockpit rolls to the next contract 3 days earlier (ROLL_DAYS=3)."
+  },
+  {
+   "id": "api-2026-12-22",
+   "title": "API weekly crude stocks",
+   "when": "2026-12-23T03:00:00+05:30",
+   "impact": "med",
+   "assets": [
+    "CRUDEOIL",
+    "CRUDEOILM"
+   ],
+   "note": "Rule-based; confirmed by the live feed during the week."
+  },
+  {
+   "id": "eia-crude-2026-12-23",
+   "title": "EIA weekly crude inventories",
+   "when": "2026-12-23T21:00:00+05:30",
+   "impact": "high",
+   "assets": [
+    "CRUDEOIL",
+    "CRUDEOILM"
+   ],
+   "note": "Rule-based; confirmed by the live feed during the week."
+  },
+  {
+   "id": "eia-gas-2026-12-24",
+   "title": "EIA natural gas storage",
+   "when": "2026-12-24T21:00:00+05:30",
+   "impact": "high",
+   "assets": [
+    "NATURALGAS",
+    "NATGASMINI"
+   ],
+   "note": "Rule-based; confirmed by the live feed during the week."
+  },
+  {
+   "id": "exp-2026-12-28",
+   "title": "MCX expiry: NATGASMINI, NATURALGAS",
+   "when": "2026-12-28T23:55:00+05:30",
+   "impact": "med",
+   "assets": [
+    "NATGASMINI",
+    "NATURALGAS"
+   ],
+   "note": "Contracts: NATGASMINI28DEC26FUT, NATURALGAS28DEC26FUT. The cockpit rolls to the next contract 3 days earlier (ROLL_DAYS=3)."
+  },
+  {
+   "id": "fomc-min-2026-12-30",
+   "title": "FOMC minutes (Dec meeting)",
+   "when": "2026-12-31T00:30:00+05:30",
+   "impact": "med",
+   "assets": [
+    "GOLD",
+    "SILVER"
+   ],
+   "note": "Source: federalreserve.gov"
+  },
+  {
+   "id": "exp-2026-12-31",
+   "title": "MCX expiry: ALUMINI, ALUMINIUM, COPPER, GOLDTEN, LEAD, LEADMINI, SILVER100, ZINC, ZINCMINI",
+   "when": "2026-12-31T23:55:00+05:30",
+   "impact": "med",
+   "assets": [
+    "ALUMINI",
+    "ALUMINIUM",
+    "COPPER",
+    "GOLDTEN",
+    "LEAD",
+    "LEADMINI",
+    "SILVER100",
+    "ZINC",
+    "ZINCMINI"
+   ],
+   "note": "Contracts: ALUMINI31DEC26FUT, ALUMINIUM31DEC26FUT, COPPER31DEC26FUT, GOLDTEN31DEC26FUT, LEAD31DEC26FUT, LEADMINI31DEC26FUT, SILVER10031DEC26FUT, ZINC31DEC26FUT, ZINCMINI31DEC26FUT. The cockpit rolls to the next contract 3 days earlier (ROLL_DAYS=3)."
+  },
+  {
+   "id": "exp-2027-01-05",
+   "title": "MCX expiry: GOLDM",
+   "when": "2027-01-05T23:55:00+05:30",
+   "impact": "med",
+   "assets": [
+    "GOLDM"
+   ],
+   "note": "Contracts: GOLDM05JAN27FUT. The cockpit rolls to the next contract 3 days earlier (ROLL_DAYS=3)."
+  },
+  {
+   "id": "us-nfp-2027-01-08",
+   "title": "US NFP + unemployment (Dec)",
+   "when": "2027-01-08T19:00:00+05:30",
+   "impact": "high",
+   "assets": [
+    "GOLD",
+    "SILVER",
+    "CRUDEOIL",
+    "NATURALGAS",
+    "COPPER",
+    "ZINC",
+    "ALUMINIUM",
+    "LEAD",
+    "NICKEL",
+    "NIFTY"
+   ],
+   "note": "Source: bls.gov"
+  },
+  {
+   "id": "us-cpi-2027-01-13",
+   "title": "US CPI (Dec)",
+   "when": "2027-01-13T19:00:00+05:30",
+   "impact": "high",
+   "assets": [
+    "GOLD",
+    "SILVER",
+    "CRUDEOIL",
+    "NATURALGAS",
+    "COPPER",
+    "ZINC",
+    "ALUMINIUM",
+    "LEAD",
+    "NICKEL",
+    "NIFTY"
+   ],
+   "note": "Source: bls.gov"
+  }
+ ]
 }
