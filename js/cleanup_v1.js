@@ -180,25 +180,29 @@
     };
   }
   // 4d. event badges
-  var ROWH = 17, LEGH = 20;
-  function shortTitle(t, n) { t = String(t || '').replace(/\s+/g, ' ').replace(/^(US|China|Euro area) /, function (m) { return m; }).trim(); var cut = t.split(/[;:—–(]/)[0].trim(); if (cut.length >= 6) t = cut; return t.length > n ? t.slice(0, n - 1) + '…' : t; }
-  function badgeText(p) { return (p.kind === 'pin' ? '◆ ' : '◇ ') + shortTitle(p.title, mob() ? 14 : 22) + ' · ' + (FXV.tf === 'D' ? istFmt(p.when, true).replace(/, \d\d:\d\d$/, '') : istFmt(p.when, false)); }
-  function layoutBadges(placed, el) {   // greedy rows in pixel space for the current view; returns row count
-    var v = FXV.view || fxDefView(FXV.bars.c.length), W = (el && el._fullLayout ? el._fullLayout.xaxis._length : (el ? el.clientWidth - 70 : 600)) || 600, ppb = W / Math.max(1, v[1] - v[0]);
-    var ends = [], maxRows = mob() ? 3 : 4, rows = 0;
+  /* Events lane: a strip BELOW the price/indicator panes, sharing the candle x-axis (zooms/pans in sync), dates under it. */
+  var LANE_ROW_PX = 19;
+  function laneRows() { return mob() ? 3 : 4; }
+  function shortTitle(t, n) { t = String(t || '').replace(/\s+/g, ' ').trim(); var cut = t.split(/[;:—–(]/)[0].trim(); if (cut.length >= 6) t = cut; return t.length > n ? t.slice(0, n - 1) + '…' : t; }
+  function badgeText(p) { return (p.kind === 'pin' ? '◆ ' : '◇ ') + shortTitle(p.title, mob() ? 13 : 22) + ' · ' + (FXV.tf === 'D' ? istFmt(p.when, true).replace(/, \d\d:\d\d$/, '') : istFmt(p.when, false)); }
+  function layoutBadges(placed, el) {   // greedy rows in pixel space for the current view; returns rows used
+    var v = (el && el._fullLayout && el._fullLayout.xaxis.range) || FXV.view || fxDefView(FXV.bars.c.length);
+    var W = (el && el._fullLayout ? el._fullLayout.xaxis._length : (el ? el.clientWidth - 70 : 600)) || 600, ppb = W / Math.max(1, v[1] - v[0]);
+    var ends = [], maxRows = Math.min(laneRows(), FXV._laneRows || laneRows()), rows = 0;
     placed.slice().sort(function (a, b) { return a.xnum - b.xnum; }).forEach(function (p) {
-      var w = badgeText(p).length * (mob() ? 5.6 : 6.1) + 12, cx = (p.xnum - v[0]) * ppb, l = cx - w / 2, r = cx + w / 2;
+      var w = badgeText(p).length * (mob() ? 5.5 : 6.1) + 12, cx = (p.xnum - v[0]) * ppb, l = Math.max(0, cx - w / 2), r = l + w;
+      if (r > W) { r = W; l = W - w; }
       p.vis = p.xnum >= v[0] - 0.5 && p.xnum <= v[1] + 0.5;
       if (!p.vis) { p.row = 0; return; }
       var row = 0; while (row < ends.length && ends[row] > l - 4) row++;
-      if (row >= maxRows) { p.row = -1; return; }   // no room: still listed under the chart, line stays on the chart
+      if (row >= maxRows) { p.row = -1; return; }   // no room at this zoom: still in the list under the chart
       ends[row] = r; p.row = row; rows = Math.max(rows, row + 1);
     });
     return rows;
   }
-  function badgeAnn(p) {
+  function badgeAnn(p, yref, nrows) {
     var gold = '#e3b341', hi = p.impact === 'high', pin = p.kind === 'pin';
-    return { x: p.xnum, y: 1, xref: 'x', yref: 'paper', text: esc(badgeText(p)), showarrow: false, yanchor: 'bottom', xanchor: 'center', yshift: LEGH + 2 + p.row * ROWH, captureevents: true,
+    return { x: p.xnum, y: nrows - p.row - 0.5, xref: 'x', yref: yref || '__lane', text: esc(badgeText(p)), showarrow: false, yanchor: 'middle', xanchor: 'center', captureevents: true,
       font: { size: mob() ? 9.5 : 10.5, color: pin ? '#0d1117' : (hi ? '#ffd8a8' : gold) }, bgcolor: pin ? gold : 'rgba(13,17,23,.95)', bordercolor: hi ? '#f85149' : gold, borderwidth: 1.2, borderpad: 2,
       visible: p.vis && p.row >= 0, name: 'ckev-' + p.n, hovertext: esc(istFmt(p.when, true) + ' IST — ' + p.title) };
   }
@@ -207,24 +211,42 @@
     window.fxFeedMarks = function (r, b, x, shapes, ann, T, m) {
       var a0 = ann.length, s0 = shapes.length;
       _marks.apply(this, arguments);
-      ann.splice(a0, ann.length - a0);   // drop the numbered badges, keep the lines + hover dots
-      for (var i = s0; i < shapes.length; i++) { shapes[i].opacity = (shapes[i].opacity || 1) * 0.6; shapes[i].y1 = 1; }
+      ann.splice(a0, ann.length - a0);   // drop the numbered badges at the top
+      for (var i = s0; i < shapes.length; i++) { shapes[i].opacity = (shapes[i].opacity || 1) * 0.45; shapes[i].y0 = 0; shapes[i].y1 = 1; }
+      FXV.feedTop = 0; FXV._laneRows = 0;
       var placed = FXV.feedMarks || []; if (!placed.length) return;
-      var rows = layoutBadges(placed, $('fxchart'));
-      placed.forEach(function (p) { ann.push(badgeAnn(p)); });
-      FXV.feedTop = LEGH + 6 + Math.max(1, rows) * ROWH;
+      FXV._laneRows = Math.min(laneRows(), placed.length);
+      layoutBadges(placed, $('fxchart'));
+      placed.forEach(function (p) { ann.push(badgeAnn(p, '__lane', FXV._laneRows)); });
     };
+  }
+  // reshape the layout fxDraw hands to Plotly: add the lane axis at the bottom, shrink the panes above it, put dates under the lane
+  function addLane(L, T) {
+    var n = FXV._laneRows || 0; if (!n || !L) return;
+    var H = L.height || 500, mb = (L.margin && L.margin.b) || 28, mt = (L.margin && L.margin.t) || 28, plotH = Math.max(200, H - mb - mt);
+    var lanePx = n * LANE_ROW_PX + 8, frac = Math.min(0.3, lanePx / plotH), gap = Math.min(0.04, 10 / plotH);
+    var k = 1; Object.keys(L).forEach(function (key) { var m = /^yaxis(\d*)$/.exec(key); if (m) k = Math.max(k, +(m[1] || 1)); });
+    var lane = 'y' + (k + 1), top = frac + gap;
+    Object.keys(L).forEach(function (key) { var ax = L[key]; if (/^yaxis\d*$/.test(key) && ax && ax.domain) ax.domain = [top + ax.domain[0] * (1 - top), top + ax.domain[1] * (1 - top)]; });
+    if (L.yaxis && !L.yaxis.domain) L.yaxis.domain = [top, 1];
+    L['yaxis' + (k + 1)] = { domain: [0, frac], range: [0, n], fixedrange: true, showgrid: false, zeroline: false, showticklabels: false, showline: false };
+    L.xaxis = L.xaxis || {}; L.xaxis.anchor = lane;
+    (L.annotations || []).forEach(function (a) { if (a.yref === '__lane') a.yref = lane; });
+    L.shapes = L.shapes || [];
+    L.shapes.unshift({ type: 'rect', xref: 'paper', x0: 0, x1: 1, yref: 'paper', y0: 0, y1: frac, fillcolor: 'rgba(227,179,65,.05)', line: { color: 'rgba(227,179,65,.25)', width: 1 }, layer: 'below', name: 'cklane' });
+    L.annotations = L.annotations || [];
+    L.annotations.push({ xref: 'paper', x: 0, yref: 'paper', y: frac, text: 'EVENTS (IST) · tap', showarrow: false, xanchor: 'left', yanchor: 'bottom', font: { size: 9, color: '#8b949e' }, name: 'cklanelbl' });
+    FXV._lane = lane;
   }
   var relT = 0;
   function badgeRelayoutSoon() {
     clearTimeout(relT); relT = setTimeout(function () {
-      var el = $('fxchart'), placed = FXV.feedMarks || []; if (!el || !el.layout || !placed.length || !FXV.bars) return;
-      var rows = layoutBadges(placed, el), anns = (el.layout.annotations || []).filter(function (a) { return !(a.name || '').startsWith('ckev-'); });
-      placed.forEach(function (p) { anns.push(badgeAnn(p)); });
-      var top = LEGH + 6 + Math.max(1, rows) * ROWH, u = { annotations: anns };
-      if (Math.abs(top - (FXV.feedTop || 0)) > 1) { FXV.feedTop = top; u['margin.t'] = (mob() ? 34 : 28) + top; }
-      FXV.fitting = true; Plotly.relayout(el, u).then(function () { FXV.fitting = false; }, function () { FXV.fitting = false; });
-    }, 260);
+      var el = $('fxchart'), placed = FXV.feedMarks || []; if (!el || !el.layout || !placed.length || !FXV.bars || !FXV._lane) return;
+      layoutBadges(placed, el);
+      var anns = (el.layout.annotations || []).filter(function (a) { return !(a.name || '').startsWith('ckev-'); });
+      placed.forEach(function (p) { anns.push(badgeAnn(p, FXV._lane, FXV._laneRows)); });
+      FXV.fitting = true; Plotly.relayout(el, { annotations: anns }).then(function () { FXV.fitting = false; }, function () { FXV.fitting = false; });
+    }, 150);
   }
   function showPop(p, el) {
     var old = document.querySelector('.ckpop'); if (old) old.remove(); if (!p) return;
@@ -234,7 +256,8 @@
     d.innerHTML = '<button class="x" type="button" aria-label="Close">×</button><div class="m"><span class="imp ' + esc(p.impact) + '">' + esc(p.impact) + '</span>' + (p.kind === 'pin' ? 'News' : 'Scheduled') + ' · ' + esc(istFmt(p.when, true)) + ' IST</div>' +
       '<div class="t">' + esc(p.title) + '</div>' + (line ? '<div>' + esc(line) + '</div>' : '') + url;
     var xa = el._fullLayout.xaxis, v = xa.range, px = xa._offset + (p.xnum - v[0]) / (v[1] - v[0]) * xa._length;
-    d.style.top = (el.offsetTop + 4) + 'px'; d.style.left = Math.max(4, Math.min(el.clientWidth - 300, px - 150) + el.offsetLeft) + 'px';
+    var ly = el._fullLayout[(FXV._lane || 'y').replace('y', 'yaxis')] || el._fullLayout.yaxis, laneTop = ly ? ly._offset : el.clientHeight - 80;
+    d.style.top = (el.offsetTop + laneTop - 6) + 'px'; d.style.transform = 'translateY(-100%)'; d.style.left = Math.max(4, Math.min(el.clientWidth - 300, px - 150) + el.offsetLeft) + 'px';
     d.querySelector('.x').onclick = function () { d.remove(); };
     host.appendChild(d);
   }
@@ -259,8 +282,11 @@
   var _draw = window.fxDraw;
   if (typeof _draw === 'function') {
     window.fxDraw = function () {
-      var r = _draw.apply(this, arguments); var el = $('fxchart');
-      if (el && el.on) { bindWheel(el); bindBadges(el); }
+      var react = Plotly.react, r;
+      Plotly.react = function (gd, data, layout, cfg) { try { var id = typeof gd === 'string' ? gd : gd && gd.id; if (id === 'fxchart') { addLane(layout, data); cfg = Object.assign({}, cfg, { scrollZoom: false }); } } catch (e) {} return react.call(this, gd, data, layout, cfg); };
+      try { r = _draw.apply(this, arguments); } finally { Plotly.react = react; }
+      var el = $('fxchart');
+      if (el && el.on) { bindWheel(el); bindBadges(el); if (!el.dataset.ckrl) { el.dataset.ckrl = '1'; el.on('plotly_relayout', function (ev) { if (ev && (ev['xaxis.range[0]'] != null || ev['xaxis.range'])) badgeRelayoutSoon(); }); } }
       return r;
     };
   }
