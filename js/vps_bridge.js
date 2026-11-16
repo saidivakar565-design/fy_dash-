@@ -36,7 +36,7 @@
     base: BASE, ws: WS, notes: notes,
     key: key,
     active: function () { return !!key() && source() !== 'fyers'; },
-    tok: function () { var c = lj('fy_cfg') || {}; return { access: 'cloud-openalgo', appId: c.appId || '', exp: Math.floor(Date.now() / 1000) + 12 * 3600, name: 'Cloud OpenAlgo', vps: true }; },
+    tok: function () { var c = lj('fy_cfg') || {}; return { access: 'cloud-openalgo', appId: c.appId || 'CLOUD-OPENALGO', exp: Math.floor(Date.now() / 1000) + 12 * 3600, name: 'Cloud OpenAlgo', vps: true }; },
     /* GET /cockpit/* with the key in a header (never in the URL) */
     get: function (path) {
       return _fetch(BASE + path, { method: 'GET', headers: { 'X-API-KEY': key() }, credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store' })
