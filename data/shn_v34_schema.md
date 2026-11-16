@@ -6,7 +6,7 @@ The phone screener reads this file from the laptop Market Radar address (the sam
 {laptop}/shn_v34_state.json
 ```
 
-The page sends `X-Radar: 1` and does not send a Fyers token. CORS must allow `https://saidivakar565-design.github.io`. The phone never treats a missing file as prices: if the laptop is unreachable it scans the on-phone NSE watchlist (at most 30 symbols, Daily, closed bars) through Fyers.
+The page sends `X-Radar: 1` and does not send a Fyers token. CORS must allow `https://saidivakar565-design.github.io`. The phone never treats a missing file as prices: if the laptop is unreachable it scans the on-phone NSE watchlist (at most 50 symbols, Daily, closed bars) through Fyers, one request every 1.6 seconds.
 
 MCX trade state in the cockpit is computed on the phone from Fyers history. This file is only the fallback when that login is missing, and it is the primary feed for the NSE tab.
 
