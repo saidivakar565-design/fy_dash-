@@ -1,0 +1,24 @@
+name: apply-cloud-openalgo-patch
+on:
+  push:
+    branches: [main]
+    paths: ['tools/apply_cloud_patch.py']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch index.html (CSP + cloud OpenAlgo defaults + PRO scripts)
+        run: |
+          if grep -q 'js/vps_bridge.js' index.html; then echo "already patched"; exit 0; fi
+          python3 tools/apply_cloud_patch.py
+          echo "4e96ae0d0a3875de77f3d652a2bf7c23f1a9cfb2fb09f7bfb6ca8b15b01ef3b4  index.html" | sha256sum -c -
+          git rm -q tools/apply_cloud_patch.py .github/workflows/apply-cloud-patch.yml
+          git config user.name "saidivakar565-design"
+          git config user.email "saidivakar565-design@users.noreply.github.com"
+          git add index.html
+          git commit -q -m "Phone cockpit: cloud OpenAlgo by default, Fyers direct off, PRO button" -m "- CSP connect-src allows https/wss srv2165780.hstgr.cloud; the two edited inline scripts have recomputed sha256 hashes." -m "- Default WebSocket URL on GitHub Pages is wss://srv2165780.hstgr.cloud/ws; default source Cloud OpenAlgo. Fyers direct hidden and guarded (a phone Fyers login logs out the server)." -m "- FyAuth/fyAuth accept a saved cloud OpenAlgo key, so candles, Daily board, SHN tiles and charts load through the server." -m "- Loads js/vps_bridge.js (head) and js/vps_pro.js (end). Applied by a one-shot workflow (file too large for the API); the workflow and patch script remove themselves."
+          git push
