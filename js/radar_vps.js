@@ -31,6 +31,10 @@
         if (/needs the laptop/.test(el.textContent)) el.textContent = 'Summary from Market Radar on the cloud server. The full Chain Reaction Map (live MCX Pro chart with pinch / price-axis zoom, chain, who gains / who pays, economic calendar) opens with "Open full map ↗" - log in with your Market Radar user.';
       });
       (root || document).querySelectorAll('details.rt-cfg summary').forEach(function (s) { if (s.textContent === 'Laptop address') s.textContent = 'Server address'; });
+      (root || document).querySelectorAll('.rt-ok,.rt-off').forEach(function (s) {
+        if (/Laptop online/.test(s.textContent)) s.textContent = '● Server online';
+        else if (/Laptop offline/.test(s.textContent)) s.textContent = key() ? '● Server not reachable' : '● Save your OpenAlgo API key on the Live feed tab';
+      });
     } catch (e) {}
   }
   var mo = new MutationObserver(function () { fix(); }); mo.observe(document.body, { childList: true, subtree: true });
