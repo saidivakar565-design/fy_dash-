@@ -37,7 +37,7 @@
       '.fxev .cktime{color:#8b949e;font-size:11px;margin-right:6px;white-space:nowrap}');
 
   /* ---------- 1. navigation: duplicate / laptop-only pages under "More" ---------- */
-  var MORE = { radar: 'needs the laptop (Market Radar is moving to the VPS)', dc20: 'same prices/signals as the Hub, PRO and Screener; laptop parts offline', live: 'settings only', roadmap: 'developer notes' };
+  var MORE = { radar: 'Market Radar on the cloud server · full map ↗', dc20: 'same prices/signals as the Hub, PRO and Screener; laptop parts offline', live: 'settings only', roadmap: 'developer notes' };
   function nav() {
     var n = $('nav'); if (!n || n.dataset.ck) return; n.dataset.ck = '1';
     Object.keys(MORE).forEach(function (t) { var b = n.querySelector('[data-tab="' + t + '"]'); if (b) { b.classList.add('ckhid'); b.title = 'Moved under More: ' + MORE[t]; } });
