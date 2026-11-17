@@ -344,3 +344,6 @@
 /* cockpit v3 (17 Nov 2026): Pro Screener tab, CSV/Excel downloads, SD/UT/SHN chart markers — external files, read-only */
 (function () { try { if (document.querySelector('script[data-ck3]')) return; ['js/ck_downloads.js', 'js/pro_screener_tab.js', 'js/chart_markers.js'].forEach(function (f) { var s = document.createElement('script'); s.src = f + '?v=20261117'; s.dataset.ck3 = '1'; s.async = false; document.body.appendChild(s); }); } catch (e) {} })();
 (function () { try { if (document.querySelector('script[data-rvps]')) return; var s = document.createElement('script'); s.src = 'js/radar_vps.js?v=20261117b'; s.dataset.rvps = '1'; s.async = false; document.body.appendChild(s); } catch (e) {} })();
+
+/* radar fix 17 Nov 2026: server-built sector rotation / macro / heat map data (js/cockpit_fresh.js). Read-only. */
+(function(){ try { if (document.querySelector('script[data-ckfresh]')) return; var s = document.createElement('script'); s.src = 'js/cockpit_fresh.js?v=20261117'; s.dataset.ckfresh = '1'; document.body.appendChild(s); } catch (e) {} })();
